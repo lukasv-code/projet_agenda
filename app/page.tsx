@@ -90,7 +90,7 @@ const initialPresets: PresetSlot[] = [
   },
   {
     jour: "Lundi",
-    heureDebut: "09:00",
+    heureDebut: "09:30",
     activity: "Révision",
     prenom: "Alex",
     nom: "Martin",
@@ -128,7 +128,6 @@ const generateHours = () => {
 const heures = generateHours();
 
 const buildInitialSchedule = () => {
-  // Désormais, chaque cellule contient un tableau de slots (pour gérer les superpositions)
   const schedule: { [key: string]: Slot[] } = {};
 
   initialPresets.forEach((preset, index) => {
@@ -480,7 +479,6 @@ export default function AgendaApp() {
                       {visibleSlots.length > 0 && (
                         <div className="absolute inset-1 z-10 flex items-center justify-center">
                           {visibleSlots.length === 1 ? (
-                            // S'il n'y a qu'une seule activité
                             <div
                               onClick={() =>
                                 setSelectedSlotForModal(visibleSlots[0])
@@ -509,70 +507,38 @@ export default function AgendaApp() {
                               </div>
                             </div>
                           ) : (
-                            // S'il y a PLUSIEURS activités superposées : Effet de déploiement gauche/droite au survol
-                            <div className="relative w-full h-full group flex items-center justify-center">
-                              {/* Carte principale affichée par défaut */}
-                              <div
-                                className={`w-full h-full p-2 border text-xs shadow-md overflow-hidden flex flex-col justify-between rounded-xl cursor-pointer bg-white border-indigo-300 text-indigo-950 font-bold flex items-center justify-center text-center transition-all group-hover:opacity-0`}
-                                style={{
-                                  height: `${(visibleSlots[0].duration / 30) * 4 - 0.5}rem`,
-                                }}
-                              >
-                                <span className="text-[11px] bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full shadow-sm">
-                                  ⚡ {visibleSlots.length} activités superposées
-                                </span>
-                                <span className="text-[10px] text-slate-500 font-normal">
-                                  Survolez pour choisir
-                                </span>
-                              </div>
-
-                              {/* Cartes déployées à gauche et à droite au survol */}
-                              <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 flex items-center justify-center z-40">
-                                {visibleSlots.map((slot, idx) => {
-                                  // Calcul du décalage horizontal selon l'index pour étaler à gauche et à droite
-                                  const total = visibleSlots.length;
-                                  const offsetMultiplier =
-                                    idx - (total - 1) / 2;
-                                  const translateX = offsetMultiplier * 110; // décale chaque carte de 110% en largeur
-
-                                  return (
-                                    <div
-                                      key={slot.id}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedSlotForModal(slot);
-                                      }}
-                                      className={`absolute p-2.5 border text-xs shadow-xl rounded-xl cursor-pointer flex flex-col justify-between transition-all duration-300 hover:scale-105 ${slot.color}`}
-                                      style={{
-                                        width: "105%",
-                                        height: `${(slot.duration / 30) * 4 - 0.5}rem`,
-                                        transform: `translateX(${translateX}%)`,
-                                        zIndex: 50 + idx,
-                                      }}
-                                    >
-                                      <div className="flex justify-between items-start">
-                                        <span className="font-bold truncate text-slate-900">
-                                          {slot.activity}
-                                        </span>
-                                        <span className="text-[10px] font-semibold bg-white/80 px-1.5 py-0.5 rounded-full text-slate-600">
-                                          {slot.inscrits}/{slot.maxInscrits}
-                                        </span>
-                                      </div>
-                                      <div className="text-[10px] truncate font-medium opacity-80">
-                                        {slot.prenom} {slot.nom}
-                                      </div>
-                                      <div className="flex justify-center items-center pb-0.5">
-                                        {slot.estInscrit && (
-                                          <span
-                                            className="w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white shadow-sm"
-                                            title="Inscrit"
-                                          ></span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
+                            // S'il y a plusieurs activités : affichage côte à côte (split) permanent ou partage de l'espace, sans forcer le survol global
+                            <div className="w-full h-full flex gap-1 items-center justify-center">
+                              {visibleSlots.map((slot) => (
+                                <div
+                                  key={slot.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedSlotForModal(slot);
+                                  }}
+                                  className={`flex-1 h-full p-1.5 border text-[10px] shadow-sm overflow-hidden flex flex-col justify-between rounded-lg cursor-pointer transition-all duration-200 hover:scale-[1.02] ${slot.color}`}
+                                  style={{
+                                    height: `${(slot.duration / 30) * 4 - 0.5}rem`,
+                                  }}
+                                >
+                                  <div className="flex flex-col">
+                                    <span className="font-bold truncate text-slate-900 leading-tight">
+                                      {slot.activity}
+                                    </span>
+                                    <span className="text-[9px] opacity-75">
+                                      {slot.inscrits}/{slot.maxInscrits}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-center items-center pb-0.5">
+                                    {slot.estInscrit && (
+                                      <span
+                                        className="w-1.5 h-1.5 bg-rose-500 rounded-full ring-1 ring-white shadow-sm"
+                                        title="Inscrit"
+                                      ></span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
