@@ -60,6 +60,9 @@ export default function AgendaApp() {
   // Stocke les créneaux placés : clé = "Jour-Heure"
   const [schedule, setSchedule] = useState<{ [key: string]: Slot }>({});
 
+  // État pour le filtre actif ("Tous" par défaut)
+  const [filterActivity, setFilterActivity] = useState("Tous");
+
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
     const actObj = activitiesData.find((a) => a.name === selectedActivity);
@@ -76,18 +79,16 @@ export default function AgendaApp() {
   const handleDrop = (jour: string, heureDebut: string) => {
     if (!generatedSlot) return;
 
-    const numBlocks = generatedSlot.duration / 30; // Nombre de blocs de 30 min
+    const numBlocks = generatedSlot.duration / 30;
     const startIndex = heures.indexOf(heureDebut);
 
     if (startIndex === -1) return;
 
     const newSchedule = { ...schedule };
 
-    // Place le créneau principal sur la case de départ
     const startKey = `${jour}-${heureDebut}`;
     newSchedule[startKey] = generatedSlot;
 
-    // Marque les blocs suivants comme couverts
     for (let i = 1; i < numBlocks; i++) {
       const nextIndex = startIndex + i;
       if (nextIndex < heures.length) {
@@ -187,11 +188,33 @@ export default function AgendaApp() {
         </div>
       </div>
 
-      {/* COLONNE DE DROITE : Grille Emploi du temps */}
-      <div className="w-3/4 p-6 overflow-auto">
-        <h2 className="text-xl font-bold mb-4 text-black">
-          Emploi du temps de la semaine (8h - 00h)
-        </h2>
+      {/* COLONNE DE DROITE : Grille Emploi du temps + Filtre */}
+      <div className="w-3/4 p-6 overflow-auto flex flex-col">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-black">
+            Emploi du temps de la semaine (8h - 00h)
+          </h2>
+
+          {/* SÉLECTEUR DE FILTRE */}
+          <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium text-black">
+              Filtrer par :
+            </label>
+            <select
+              className="p-2 border rounded text-black bg-white text-sm"
+              value={filterActivity}
+              onChange={(e) => setFilterActivity(e.target.value)}
+            >
+              <option value="Tous">Toutes les activités</option>
+              {activitiesData.map((act) => (
+                <option key={act.id} value={act.name}>
+                  {act.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div className="bg-white rounded shadow border inline-block min-w-full">
           <div className="grid grid-cols-6 border-b bg-gray-50 text-black font-semibold text-center sticky top-0 z-20">
             <div className="p-3 border-r">Heures</div>
@@ -226,6 +249,12 @@ export default function AgendaApp() {
                   );
                 }
 
+                // Vérifie si le créneau correspond au filtre actif
+                const isVisible =
+                  !slotInCell ||
+                  filterActivity === "Tous" ||
+                  slotInCell.activity === filterActivity;
+
                 return (
                   <div
                     key={jour}
@@ -233,7 +262,7 @@ export default function AgendaApp() {
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleDrop(jour, heure)}
                   >
-                    {slotInCell ? (
+                    {slotInCell && isVisible ? (
                       <div
                         className={`absolute top-0 left-0 w-full p-2 border text-xs shadow-md overflow-hidden flex flex-col justify-between z-10 rounded ${slotInCell.color}`}
                         style={{
@@ -250,6 +279,9 @@ export default function AgendaApp() {
                           {slotInCell.duration} min
                         </span>
                       </div>
+                    ) : slotInCell && !isVisible ? (
+                      // Optionnel : un style grisé ou masqué si le filtre ne correspond pas
+                      <div className="absolute top-0 left-0 w-full h-full bg-gray-100 opacity-30 pointer-events-none"></div>
                     ) : null}
                   </div>
                 );
