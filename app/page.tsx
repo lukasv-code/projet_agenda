@@ -1,17 +1,32 @@
-"tsx";
 "use client";
 import { useState } from "react";
-import activitiesData from "@/public/activities.json";
+
+// Liste des activités
+const activitiesData = [
+  { id: "1", name: "Cours magistral", color: "bg-blue-500" },
+  { id: "2", name: "Travaux dirigés (TD)", color: "bg-green-500" },
+  { id: "3", name: "Réunion / Projet", color: "bg-purple-500" },
+  { id: "4", name: "Pause / Repas", color: "bg-orange-500" },
+];
+
+// Définition de la structure d'un créneau
+interface Slot {
+  activity: string;
+  description: string;
+  duration: number;
+}
 
 export default function AgendaApp() {
   const [description, setDescription] = useState("");
   const [selectedActivity, setSelectedActivity] = useState(
     activitiesData[0].name,
   );
-  const [duration, setDuration] = useState("30"); // en minutes
-  const [generatedSlot, setGeneratedSlot] = useState(null);
+  const [duration, setDuration] = useState("30");
 
-  const handleGenerate = (e) => {
+  // On indique explicitement à TypeScript que le state peut être un 'Slot' ou 'null'
+  const [generatedSlot, setGeneratedSlot] = useState<Slot | null>(null);
+
+  const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
     setGeneratedSlot({
       activity: selectedActivity,
@@ -29,7 +44,7 @@ export default function AgendaApp() {
           <div>
             <label className="block text-sm font-medium">Activité</label>
             <select
-              className="w-full mt-1 p-2 border rounded"
+              className="w-full mt-1 p-2 border rounded text-black"
               onChange={(e) => setSelectedActivity(e.target.value)}
             >
               {activitiesData.map((act) => (
@@ -44,7 +59,7 @@ export default function AgendaApp() {
             <label className="block text-sm font-medium">Description</label>
             <input
               type="text"
-              className="w-full mt-1 p-2 border rounded"
+              className="w-full mt-1 p-2 border rounded text-black"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Ex: Chapitre 1 - Introduction"
@@ -54,7 +69,7 @@ export default function AgendaApp() {
           <div>
             <label className="block text-sm font-medium">Durée</label>
             <select
-              className="w-full mt-1 p-2 border rounded"
+              className="w-full mt-1 p-2 border rounded text-black"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
             >
@@ -72,14 +87,13 @@ export default function AgendaApp() {
           </button>
         </form>
 
-        {/* Zone du créneau prêt à être glissé */}
         {generatedSlot && (
           <div
             draggable
             className="mt-6 p-4 bg-blue-100 border border-blue-300 rounded cursor-grab shadow"
           >
-            <h3 className="font-bold">{generatedSlot.activity}</h3>
-            <p className="text-sm">{generatedSlot.description}</p>
+            <h3 className="font-bold text-black">{generatedSlot.activity}</h3>
+            <p className="text-sm text-black">{generatedSlot.description}</p>
             <span className="text-xs text-gray-600">
               Durée : {generatedSlot.duration} min
             </span>
@@ -87,7 +101,7 @@ export default function AgendaApp() {
         )}
       </div>
 
-      {/* COLONNE DE DROITE : Grille Emploi du Temps */}
+      {/* COLONNE DE DROITE : Grille Emploi du temps */}
       <div className="w-2/3 p-6 overflow-y-auto">
         <h2 className="text-xl font-bold mb-4">Emploi du temps</h2>
         <div className="bg-white rounded shadow border">
@@ -98,7 +112,7 @@ export default function AgendaApp() {
                 <div
                   className="flex-1 border-l pl-4 h-full flex items-center bg-gray-50 hover:bg-gray-100 transition"
                   onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
+                  onDrop={() => {
                     alert(`Créneau déposé à ${time} !`);
                   }}
                 >
