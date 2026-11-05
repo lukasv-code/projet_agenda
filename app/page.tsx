@@ -5,43 +5,48 @@ const activitiesData = [
   {
     id: "1",
     name: "Handball",
-    color: "bg-blue-100 border-blue-400 text-blue-800",
+    color: "bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100",
   },
   {
     id: "2",
     name: "Cinéma",
-    color: "bg-green-100 border-green-400 text-green-800",
+    color:
+      "bg-emerald-50 border-emerald-200 text-emerald-900 hover:bg-emerald-100",
   },
   {
     id: "3",
     name: "Casino",
-    color: "bg-purple-100 border-purple-400 text-purple-800",
+    color: "bg-purple-50 border-purple-200 text-purple-900 hover:bg-purple-100",
   },
   {
     id: "4",
     name: "jeu de société",
-    color: "bg-orange-100 border-orange-400 text-orange-800",
+    color: "bg-amber-50 border-amber-200 text-amber-900 hover:bg-amber-100",
   },
   {
     id: "5",
     name: "Révision",
-    color: "bg-indigo-100 border-indigo-400 text-indigo-800",
+    color: "bg-indigo-50 border-indigo-200 text-indigo-900 hover:bg-indigo-100",
   },
   {
     id: "6",
     name: "Bar",
-    color: "bg-yellow-100 border-yellow-400 text-yellow-800",
+    color: "bg-yellow-50 border-yellow-200 text-yellow-900 hover:bg-yellow-100",
   },
   {
     id: "7",
     name: "Course à pied",
-    color: "bg-pink-100 border-pink-400 text-pink-800",
+    color: "bg-rose-50 border-rose-200 text-rose-900 hover:bg-rose-100",
   },
-  { id: "8", name: "Basket", color: "bg-red-100 border-red-400 text-red-800" },
+  {
+    id: "8",
+    name: "Basket",
+    color: "bg-orange-50 border-orange-200 text-orange-900 hover:bg-orange-100",
+  },
 ];
 
 interface Slot {
-  id: string; // Identifiant unique pour retrouver le créneau dans le state
+  id: string;
   activity: string;
   prenom: string;
   nom: string;
@@ -124,7 +129,7 @@ const buildInitialSchedule = () => {
     const actObj = activitiesData.find((a) => a.name === preset.activity);
     const color = actObj
       ? actObj.color
-      : "bg-blue-100 border-blue-400 text-blue-800";
+      : "bg-blue-50 border-blue-200 text-blue-900";
 
     const slotId = `preset-${index}`;
     const slot: Slot = {
@@ -176,8 +181,6 @@ export default function AgendaApp() {
     buildInitialSchedule,
   );
   const [filterActivity, setFilterActivity] = useState("Tous");
-
-  // État pour la modale de détails
   const [selectedSlotForModal, setSelectedSlotForModal] = useState<Slot | null>(
     null,
   );
@@ -229,11 +232,9 @@ export default function AgendaApp() {
     setGeneratedSlot(null);
   };
 
-  // Basculer l'inscription à un créneau
   const toggleInscription = (slotId: string) => {
     const updatedSchedule = { ...schedule };
 
-    // On parcourt toutes les cases pour mettre à jour toutes les parties du créneau (s'il s'étale sur plusieurs blocs)
     Object.keys(updatedSchedule).forEach((key) => {
       const s = updatedSchedule[key];
       if (s.id === slotId) {
@@ -253,7 +254,6 @@ export default function AgendaApp() {
 
     setSchedule(updatedSchedule);
     if (selectedSlotForModal) {
-      // Met à jour la modale ouverte
       const refSlot = Object.values(updatedSchedule).find(
         (s) => s.id === slotId,
       );
@@ -262,20 +262,27 @@ export default function AgendaApp() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden relative">
+    <div className="flex h-screen bg-slate-100 font-sans overflow-hidden">
       {/* COLONNE DE GAUCHE : Générateur */}
-      <div className="w-1/4 p-6 bg-white border-r shadow-md flex flex-col justify-between overflow-y-auto">
+      <div className="w-80 bg-white border-r border-slate-200 shadow-sm flex flex-col justify-between overflow-y-auto p-6">
         <div>
-          <h2 className="text-xl font-bold mb-4 text-black">
+          <div className="flex items-center space-x-2 mb-6">
+            <div className="w-3 h-3 bg-indigo-600 rounded-full"></div>
+            <h1 className="text-lg font-bold text-slate-800 tracking-tight">
+              Mon Agenda
+            </h1>
+          </div>
+
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
             Générer un créneau
           </h2>
           <form onSubmit={handleGenerate} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Activité
               </label>
               <select
-                className="w-full mt-1 p-2 border rounded text-black bg-white"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 value={selectedActivityName}
                 onChange={(e) => setSelectedActivityName(e.target.value)}
               >
@@ -287,84 +294,85 @@ export default function AgendaApp() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-black">
-                Prénom
-              </label>
-              <input
-                type="text"
-                className="w-full mt-1 p-2 border rounded text-black bg-white"
-                value={prenom}
-                onChange={(e) => setPrenom(e.target.value)}
-                placeholder="Ex: Thomas"
-                required
-              />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Prénom
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={prenom}
+                  onChange={(e) => setPrenom(e.target.value)}
+                  placeholder="Prénom"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Nom
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value)}
+                  placeholder="Nom"
+                  required
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-black">
-                Nom
-              </label>
-              <input
-                type="text"
-                className="w-full mt-1 p-2 border rounded text-black bg-white"
-                value={nom}
-                onChange={(e) => setNom(e.target.value)}
-                placeholder="Ex: Dupont"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-black">
+              <label className="block text-xs font-semibold text-slate-600 mb-1">
                 Description
               </label>
               <input
                 type="text"
-                className="w-full mt-1 p-2 border rounded text-black bg-white"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Ex: Entraînement..."
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-black">
-                Nombre max d'inscrits
-              </label>
-              <input
-                type="number"
-                className="w-full mt-1 p-2 border rounded text-black bg-white"
-                value={maxInscrits}
-                onChange={(e) => setMaxInscrits(e.target.value)}
-                min="1"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-black">
-                Durée
-              </label>
-              <select
-                className="w-full mt-1 p-2 border rounded text-black bg-white"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-              >
-                <option value="30">30 minutes</option>
-                <option value="60">1 heure</option>
-                <option value="90">1 heure 30</option>
-                <option value="120">2 heures</option>
-                <option value="150">2 heures 30</option>
-                <option value="180">3 heures</option>
-                <option value="210">3 heures 30</option>
-                <option value="240">4 heures</option>
-              </select>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Max Inscrits
+                </label>
+                <input
+                  type="number"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={maxInscrits}
+                  onChange={(e) => setMaxInscrits(e.target.value)}
+                  min="1"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Durée
+                </label>
+                <select
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                >
+                  <option value="30">30 min</option>
+                  <option value="60">1h00</option>
+                  <option value="90">1h30</option>
+                  <option value="120">2h00</option>
+                  <option value="150">2h30</option>
+                  <option value="180">3h00</option>
+                  <option value="240">4h00</option>
+                </select>
+              </div>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-semibold"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium p-2.5 rounded-lg text-sm shadow-sm transition-all duration-200"
             >
               Créer le créneau
             </button>
@@ -373,36 +381,39 @@ export default function AgendaApp() {
           {generatedSlot && (
             <div
               draggable
-              className={`mt-6 p-4 border rounded cursor-grab shadow ${generatedSlot.color}`}
+              className={`mt-6 p-4 border rounded-xl cursor-grab shadow-sm transition-transform active:scale-95 ${generatedSlot.color}`}
             >
-              <h3 className="font-bold">{generatedSlot.activity}</h3>
-              <p className="text-xs font-medium">
+              <h3 className="font-bold text-sm">{generatedSlot.activity}</h3>
+              <p className="text-xs font-medium opacity-80">
                 {generatedSlot.prenom} {generatedSlot.nom}
               </p>
-              <p className="text-xs mt-1">
-                Places : 0/{generatedSlot.maxInscrits}
-              </p>
-              <span className="text-xs opacity-75 mt-2 block">
-                (Glissez-moi)
-              </span>
+              <div className="mt-3 flex justify-between items-center text-[11px] font-semibold opacity-75">
+                <span>Glissez vers l'EDT</span>
+                <span>0/{generatedSlot.maxInscrits} max</span>
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* COLONNE DE DROITE : Grille Emploi du temps + Filtre */}
-      <div className="w-3/4 p-6 overflow-auto flex flex-col">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-black">
-            Emploi du temps de la semaine (8h - 00h)
-          </h2>
+      <div className="flex-1 p-8 overflow-auto flex flex-col bg-slate-50">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-slate-800">
+              Emploi du temps
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Semaine complète (8h00 - 00h00)
+            </p>
+          </div>
 
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-black">
-              Filtrer par :
+          <div className="flex items-center space-x-3 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+            <label className="text-xs font-semibold text-slate-600 pl-2">
+              Filtrer :
             </label>
             <select
-              className="p-2 border rounded text-black bg-white text-sm"
+              className="bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 p-2 focus:outline-none"
               value={filterActivity}
               onChange={(e) => setFilterActivity(e.target.value)}
             >
@@ -416,134 +427,152 @@ export default function AgendaApp() {
           </div>
         </div>
 
-        <div className="bg-white rounded shadow border inline-block min-w-full">
-          <div className="grid grid-cols-6 border-b bg-gray-50 text-black font-semibold text-center sticky top-0 z-20">
-            <div className="p-3 border-r">Heures</div>
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-1">
+          <div className="grid grid-cols-6 border-b border-slate-200 bg-slate-100/70 text-slate-700 font-semibold text-xs text-center sticky top-0 z-20 backdrop-blur-md">
+            <div className="p-3.5 border-r border-slate-200 text-slate-500">
+              Heures
+            </div>
             {jours.map((jour) => (
-              <div key={jour} className="p-3 border-r last:border-r-0">
+              <div
+                key={jour}
+                className="p-3.5 border-r border-slate-200 last:border-r-0 tracking-wide uppercase text-[11px]"
+              >
                 {jour}
               </div>
             ))}
           </div>
 
-          {heures.map((heure) => (
-            <div
-              key={heure}
-              className="grid grid-cols-6 border-b last:border-b-0 h-16"
-            >
-              <div className="p-2 border-r text-gray-500 font-medium text-center flex items-center justify-center bg-gray-50 text-xs h-16">
-                {heure}
-              </div>
+          <div className="divide-y divide-slate-100">
+            {heures.map((heure) => (
+              <div key={heure} className="grid grid-cols-6 h-16">
+                <div className="p-2 border-r border-slate-200 text-slate-400 font-medium text-center flex items-center justify-center bg-slate-50/50 text-[11px]">
+                  {heure}
+                </div>
 
-              {jours.map((jour) => {
-                const cellKey = `${jour}-${heure}`;
-                const slotInCell = schedule[cellKey];
+                {jours.map((jour) => {
+                  const cellKey = `${jour}-${heure}`;
+                  const slotInCell = schedule[cellKey];
 
-                if (slotInCell?.isCovered) {
+                  if (slotInCell?.isCovered) {
+                    return (
+                      <div
+                        key={jour}
+                        className="border-r border-slate-200 last:border-r-0 bg-slate-50/30"
+                      ></div>
+                    );
+                  }
+
+                  const isVisible =
+                    !slotInCell ||
+                    filterActivity === "Tous" ||
+                    slotInCell.activity === filterActivity;
+
                   return (
                     <div
                       key={jour}
-                      className="border-r last:border-r-0 bg-gray-50/50 h-16"
-                    ></div>
+                      className="border-r border-slate-200 last:border-r-0 relative hover:bg-indigo-50/20 transition-colors"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => handleDrop(jour, heure)}
+                    >
+                      {slotInCell && isVisible ? (
+                        <div
+                          onClick={() => setSelectedSlotForModal(slotInCell)}
+                          className={`absolute inset-1 p-2.5 border text-xs shadow-sm overflow-hidden flex flex-col justify-between z-10 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01] ${slotInCell.color}`}
+                          style={{
+                            height: `${(slotInCell.duration / 30) * 4 - 0.5}rem`,
+                          }}
+                        >
+                          <div className="flex justify-between items-start">
+                            <span className="font-bold truncate text-slate-900">
+                              {slotInCell.activity}
+                            </span>
+                            <span className="text-[10px] font-semibold bg-white/60 px-1.5 py-0.5 rounded-full text-slate-600">
+                              {slotInCell.inscrits}/{slotInCell.maxInscrits}
+                            </span>
+                          </div>
+
+                          <div className="flex justify-center items-center pb-0.5">
+                            {slotInCell.estInscrit && (
+                              <span
+                                className="w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white shadow-sm"
+                                title="Inscrit"
+                              ></span>
+                            )}
+                          </div>
+                        </div>
+                      ) : slotInCell && !isVisible ? (
+                        <div className="absolute inset-1 bg-slate-100 opacity-20 pointer-events-none rounded-xl"></div>
+                      ) : null}
+                    </div>
                   );
-                }
-
-                const isVisible =
-                  !slotInCell ||
-                  filterActivity === "Tous" ||
-                  slotInCell.activity === filterActivity;
-
-                return (
-                  <div
-                    key={jour}
-                    className="border-r last:border-r-0 relative hover:bg-gray-50 transition h-16"
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={() => handleDrop(jour, heure)}
-                  >
-                    {slotInCell && isVisible ? (
-                      <div
-                        onClick={() => setSelectedSlotForModal(slotInCell)}
-                        className={`absolute top-0 left-0 w-full p-2 border text-xs shadow-md overflow-hidden flex flex-col justify-between z-10 rounded cursor-pointer hover:opacity-90 transition ${slotInCell.color}`}
-                        style={{
-                          height: `${(slotInCell.duration / 30) * 4}rem`,
-                        }}
-                      >
-                        <div>
-                          <span className="font-bold truncate block">
-                            {slotInCell.activity}
-                          </span>
-                          <span className="text-[10px] opacity-80">
-                            {slotInCell.inscrits}/{slotInCell.maxInscrits}{" "}
-                            inscrits
-                          </span>
-                        </div>
-
-                        {/* Point rouge si inscrit */}
-                        <div className="flex justify-center items-center pb-1">
-                          {slotInCell.estInscrit && (
-                            <span
-                              className="w-2.5 h-2.5 bg-red-600 rounded-full shadow-sm"
-                              title="Vous êtes inscrit"
-                            ></span>
-                          )}
-                        </div>
-                      </div>
-                    ) : slotInCell && !isVisible ? (
-                      <div className="absolute top-0 left-0 w-full h-full bg-gray-100 opacity-30 pointer-events-none"></div>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* MODALE DE DÉTAILS DE L'ACTIVITÉ */}
+      {/* MODALE DE DÉTAILS MODERNE */}
       {selectedSlotForModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-96 text-black">
-            <h3 className="text-xl font-bold mb-2">
-              {selectedSlotForModal.activity}
-            </h3>
-            <p className="text-sm text-gray-600 mb-4 font-medium">
-              Responsable : {selectedSlotForModal.prenom}{" "}
-              {selectedSlotForModal.nom}
-            </p>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md text-slate-800 border border-slate-100 animate-in fade-in zoom-in duration-150">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <span className="text-xs font-semibold tracking-wider uppercase text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
+                  Activité
+                </span>
+                <h3 className="text-xl font-bold text-slate-900 mt-2">
+                  {selectedSlotForModal.activity}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedSlotForModal(null)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
 
-            <div className="space-y-2 mb-6 bg-gray-50 p-3 rounded border">
-              <p className="text-sm">
-                <strong>Description :</strong>{" "}
-                {selectedSlotForModal.description || "Aucune description"}
-              </p>
-              <p className="text-sm">
-                <strong>Durée :</strong> {selectedSlotForModal.duration} minutes
-              </p>
-              <p className="text-sm">
-                <strong>Inscriptions :</strong> {selectedSlotForModal.inscrits}{" "}
-                / {selectedSlotForModal.maxInscrits} personnes
-              </p>
+            <div className="space-y-3 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Responsable :</span>
+                <span className="font-medium text-slate-800">
+                  {selectedSlotForModal.prenom} {selectedSlotForModal.nom}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Description :</span>
+                <span className="font-medium text-slate-800 text-right">
+                  {selectedSlotForModal.description || "Aucune description"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Durée :</span>
+                <span className="font-medium text-slate-800">
+                  {selectedSlotForModal.duration} minutes
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Inscrits :</span>
+                <span className="font-medium text-slate-800">
+                  {selectedSlotForModal.inscrits} /{" "}
+                  {selectedSlotForModal.maxInscrits} personnes
+                </span>
+              </div>
             </div>
 
             <div className="flex justify-between items-center">
               <button
                 onClick={() => toggleInscription(selectedSlotForModal.id)}
-                className={`px-4 py-2 rounded text-white font-semibold text-sm ${
+                className={`w-full py-2.5 rounded-xl text-white font-medium text-sm shadow-sm transition-all duration-200 ${
                   selectedSlotForModal.estInscrit
-                    ? "bg-red-500 hover:bg-red-600"
-                    : "bg-green-600 hover:bg-green-700"
+                    ? "bg-rose-500 hover:bg-rose-600 shadow-rose-100"
+                    : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"
                 }`}
               >
                 {selectedSlotForModal.estInscrit
                   ? "Se désinscrire"
-                  : "S'inscrire"}
-              </button>
-
-              <button
-                onClick={() => setSelectedSlotForModal(null)}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded text-sm font-semibold"
-              >
-                Fermer
+                  : "S'inscrire à l'activité"}
               </button>
             </div>
           </div>
