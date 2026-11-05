@@ -1,0 +1,6 @@
+[
+  { "id": "1", "name": "Cours magistral", "color": "bg-blue-500" },
+  { "id": "2", "name": "Travaux dirigés (TD)", "color": "bg-green-500" },
+  { "id": "3", "name": "Réunion / Projet", "color": "bg-purple-500" },
+  { "id": "4", "name": "Pause / Repas", "color": "bg-orange-500" }
+]
