@@ -28,32 +28,36 @@ const activitiesData = [
 interface Slot {
   activity: string;
   description: string;
-  duration: number;
+  duration: number; // en minutes (30, 60, 90, 120...)
   color: string;
+  isCovered?: boolean; // Pour masquer les cellules en dessous si le créneau dure plus de 30 min
 }
 
 const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-const heures = [
-  "08:00",
-  "08:30",
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-  "12:00",
-];
+
+// Génération automatique des heures de 08:00 à 00:00 par tranches de 30 minutes
+const generateHours = () => {
+  const list = [];
+  for (let h = 8; h <= 23; h++) {
+    const hourStr = h < 10 ? `0${h}` : `${h}`;
+    list.push(`${hourStr}:00`);
+    list.push(`${hourStr}:30`);
+  }
+  list.push("00:00");
+  return list;
+};
+
+const heures = generateHours();
 
 export default function AgendaApp() {
   const [description, setDescription] = useState("");
   const [selectedActivity, setSelectedActivity] = useState(
     activitiesData[0].name,
   );
-  const [duration, setDuration] = useState("30");
+  const [duration, setDuration] = useState("60");
   const [generatedSlot, setGeneratedSlot] = useState<Slot | null>(null);
 
-  // Stocke les créneaux placés dans la grille : clé = "Jour-Heure" (ex: "Lundi-08:00")
+  // Stocke les créneaux placés : clé = "Jour-Heure"
   const [schedule, setSchedule] = useState<{ [key: string]: Slot }>({});
 
   const handleGenerate = (e: React.FormEvent) => {
@@ -69,15 +73,35 @@ export default function AgendaApp() {
     });
   };
 
-  const handleDrop = (jour: string, heure: string) => {
-    if (generatedSlot) {
-      const cellKey = `${jour}-${heure}`;
-      setSchedule((prev) => ({
-        ...prev,
-        [cellKey]: generatedSlot,
-      }));
-      setGeneratedSlot(null); // Retire le créneau de la zone de gauche une fois placé
+  const handleDrop = (jour: string, heureDebut: string) => {
+    if (!generatedSlot) return;
+
+    const numBlocks = generatedSlot.duration / 30; // Ex: 120 min / 30 = 4 blocs
+    const startIndex = heures.indexOf(heureDebut);
+
+    if (startIndex === -1) return;
+
+    const newSchedule = { ...schedule };
+
+    // Place le créneau principal sur la case de départ
+    const startKey = `${jour}-${heureDebut}`;
+    newSchedule[startKey] = generatedSlot;
+
+    // Marque les blocs suivants comme "couverts" pour la durée du créneau
+    for (let i = 1; i < numBlocks; i++) {
+      const nextIndex = startIndex + i;
+      if (nextIndex < heures.length) {
+        const nextHeure = heures[nextIndex];
+        const nextKey = `${jour}-${nextHeure}`;
+        newSchedule[nextKey] = {
+          ...generatedSlot,
+          isCovered: true, // Indique que c'est une cellule occupée par le prolongement du dessus
+        };
+      }
     }
+
+    setSchedule(newSchedule);
+    setGeneratedSlot(null);
   };
 
   return (
@@ -131,6 +155,8 @@ export default function AgendaApp() {
                 <option value="30">30 minutes</option>
                 <option value="60">1 heure</option>
                 <option value="90">1 heure 30</option>
+                <option value="120">2 heures</option>
+                <option value="180">3 heures</option>
               </select>
             </div>
 
@@ -158,13 +184,13 @@ export default function AgendaApp() {
         </div>
       </div>
 
-      {/* COLONNE DE DROITE : Grille Emploi du temps (Jours x Heures) */}
+      {/* COLONNE DE DROITE : Grille Emploi du temps (Jours x Heures jusqu'à 00:00) */}
       <div className="w-3/4 p-6 overflow-auto">
         <h2 className="text-xl font-bold mb-4 text-black">
-          Emploi du temps de la semaine
+          Emploi du temps de la semaine (8h - 00h)
         </h2>
         <div className="bg-white rounded shadow border inline-block min-w-full">
-          <div className="grid grid-cols-6 border-b bg-gray-50 text-black font-semibold text-center">
+          <div className="grid grid-cols-6 border-b bg-gray-50 text-black font-semibold text-center sticky top-0 z-10">
             <div className="p-3 border-r">Heures</div>
             {jours.map((jour) => (
               <div key={jour} className="p-3 border-r last:border-r-0">
@@ -176,10 +202,10 @@ export default function AgendaApp() {
           {heures.map((heure) => (
             <div
               key={heure}
-              className="grid grid-cols-6 border-b last:border-b-0 h-20"
+              className="grid grid-cols-6 border-b last:border-b-0 h-16"
             >
               {/* Colonne des heures */}
-              <div className="p-3 border-r text-gray-500 font-medium text-center flex items-center justify-center bg-gray-50">
+              <div className="p-2 border-r text-gray-500 font-medium text-center flex items-center justify-center bg-gray-50 text-xs">
                 {heure}
               </div>
 
@@ -187,6 +213,16 @@ export default function AgendaApp() {
               {jours.map((jour) => {
                 const cellKey = `${jour}-${heure}`;
                 const slotInCell = schedule[cellKey];
+
+                // Si la cellule est masquée car couverte par un créneau plus long du dessus, on ne l'affiche pas
+                if (slotInCell?.isCovered) {
+                  return (
+                    <div
+                      key={jour}
+                      className="border-r last:border-r-0 bg-gray-50/50"
+                    ></div>
+                  );
+                }
 
                 return (
                   <div
@@ -197,7 +233,10 @@ export default function AgendaApp() {
                   >
                     {slotInCell ? (
                       <div
-                        className={`w-full h-full p-2 rounded border text-xs shadow-sm overflow-hidden flex flex-col justify-between ${slotInCell.color}`}
+                        className={`w-full p-2 rounded border text-xs shadow-sm overflow-hidden flex flex-col justify-between ${slotInCell.color}`}
+                        style={{
+                          height: `${(slotInCell.duration / 30) * 4}rem`,
+                        }} // Ajuste la hauteur visuelle selon le nombre de blocs de 30 min
                       >
                         <span className="font-bold truncate">
                           {slotInCell.activity}
