@@ -28,7 +28,7 @@ const activitiesData = [
 interface Slot {
   activity: string;
   description: string;
-  duration: number; // en minutes (30, 60, 90, 120...)
+  duration: number; // en minutes
   color: string;
   isCovered?: boolean;
 }
@@ -76,7 +76,7 @@ export default function AgendaApp() {
   const handleDrop = (jour: string, heureDebut: string) => {
     if (!generatedSlot) return;
 
-    const numBlocks = generatedSlot.duration / 30; // Ex: 120 min / 30 = 4 blocs
+    const numBlocks = generatedSlot.duration / 30; // Nombre de blocs de 30 min
     const startIndex = heures.indexOf(heureDebut);
 
     if (startIndex === -1) return;
@@ -87,7 +87,7 @@ export default function AgendaApp() {
     const startKey = `${jour}-${heureDebut}`;
     newSchedule[startKey] = generatedSlot;
 
-    // Marque les blocs suivants comme "couverts"
+    // Marque les blocs suivants comme couverts
     for (let i = 1; i < numBlocks; i++) {
       const nextIndex = startIndex + i;
       if (nextIndex < heures.length) {
@@ -156,7 +156,10 @@ export default function AgendaApp() {
                 <option value="60">1 heure</option>
                 <option value="90">1 heure 30</option>
                 <option value="120">2 heures</option>
+                <option value="150">2 heures 30</option>
                 <option value="180">3 heures</option>
+                <option value="210">3 heures 30</option>
+                <option value="240">4 heures</option>
               </select>
             </div>
 
@@ -190,7 +193,7 @@ export default function AgendaApp() {
           Emploi du temps de la semaine (8h - 00h)
         </h2>
         <div className="bg-white rounded shadow border inline-block min-w-full">
-          <div className="grid grid-cols-6 border-b bg-gray-50 text-black font-semibold text-center sticky top-0 z-10">
+          <div className="grid grid-cols-6 border-b bg-gray-50 text-black font-semibold text-center sticky top-0 z-20">
             <div className="p-3 border-r">Heures</div>
             {jours.map((jour) => (
               <div key={jour} className="p-3 border-r last:border-r-0">
@@ -204,7 +207,7 @@ export default function AgendaApp() {
               key={heure}
               className="grid grid-cols-6 border-b last:border-b-0 h-16"
             >
-              {/* Colonne des heures fixe et indépendante */}
+              {/* Colonne des heures fixe */}
               <div className="p-2 border-r text-gray-500 font-medium text-center flex items-center justify-center bg-gray-50 text-xs h-16">
                 {heure}
               </div>
@@ -226,15 +229,15 @@ export default function AgendaApp() {
                 return (
                   <div
                     key={jour}
-                    className="border-r last:border-r-0 p-1 relative flex items-center justify-center hover:bg-gray-50 transition h-16"
+                    className="border-r last:border-r-0 relative hover:bg-gray-50 transition h-16"
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleDrop(jour, heure)}
                   >
                     {slotInCell ? (
                       <div
-                        className={`absolute top-1 left-1 right-1 p-2 rounded border text-xs shadow-sm overflow-hidden flex flex-col justify-between z-20 ${slotInCell.color}`}
+                        className={`absolute top-0 left-0 w-full p-2 border text-xs shadow-md overflow-hidden flex flex-col justify-between z-10 rounded ${slotInCell.color}`}
                         style={{
-                          height: `${(slotInCell.duration / 30) * 4 - 0.5}rem`,
+                          height: `${(slotInCell.duration / 30) * 4}rem`,
                         }}
                       >
                         <span className="font-bold truncate">
