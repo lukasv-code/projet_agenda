@@ -1,11 +1,45 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-interface Activity {
-  id: string;
-  name: string;
-  color: string;
-}
+// 1. Liste de base des activités (votre 1er JSON)
+const activitiesData = [
+  {
+    id: "1",
+    name: "Handball",
+    color: "bg-blue-100 border-blue-400 text-blue-800",
+  },
+  {
+    id: "2",
+    name: "Cinéma",
+    color: "bg-green-100 border-green-400 text-green-800",
+  },
+  {
+    id: "3",
+    name: "Casino",
+    color: "bg-purple-100 border-purple-400 text-purple-800",
+  },
+  {
+    id: "4",
+    name: "jeu de société",
+    color: "bg-orange-100 border-orange-400 text-orange-800",
+  },
+  {
+    id: "5",
+    name: "Révision",
+    color: "bg-indigo-100 border-indigo-400 text-indigo-800",
+  },
+  {
+    id: "6",
+    name: "Bar",
+    color: "bg-yellow-100 border-yellow-400 text-yellow-800",
+  },
+  {
+    id: "7",
+    name: "Course à pied",
+    color: "bg-pink-100 border-pink-400 text-pink-800",
+  },
+  { id: "8", name: "Basket", color: "bg-red-100 border-red-400 text-red-800" },
+];
 
 interface Slot {
   activity: string;
@@ -27,6 +61,37 @@ interface PresetSlot {
   duration: number;
 }
 
+// 2. Créneaux prédéfinis au lancement (votre 2ème JSON)
+const initialPresets: PresetSlot[] = [
+  {
+    jour: "Lundi",
+    heureDebut: "09:00",
+    activity: "Handball",
+    prenom: "Thomas",
+    nom: "Dupont",
+    description: "Entraînement match",
+    duration: 120,
+  },
+  {
+    jour: "Mardi",
+    heureDebut: "14:00",
+    activity: "Cinéma",
+    prenom: "Sarah",
+    nom: "Conor",
+    description: "Sortie film SF",
+    duration: 180,
+  },
+  {
+    jour: "Jeudi",
+    heureDebut: "10:30",
+    activity: "Révision",
+    prenom: "Alex",
+    nom: "Martin",
+    description: "Préparation partiels",
+    duration: 90,
+  },
+];
+
 const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
 
 const generateHours = () => {
@@ -42,80 +107,61 @@ const generateHours = () => {
 
 const heures = generateHours();
 
+// Fonction pour initialiser l'emploi du temps avec les presets
+const buildInitialSchedule = () => {
+  const schedule: { [key: string]: Slot } = {};
+
+  initialPresets.forEach((preset) => {
+    const actObj = activitiesData.find((a) => a.name === preset.activity);
+    const color = actObj
+      ? actObj.color
+      : "bg-blue-100 border-blue-400 text-blue-800";
+
+    const slot: Slot = {
+      activity: preset.activity,
+      prenom: preset.prenom,
+      nom: preset.nom,
+      description: preset.description,
+      duration: preset.duration,
+      color,
+    };
+
+    const numBlocks = preset.duration / 30;
+    const startIndex = heures.indexOf(preset.heureDebut);
+
+    if (startIndex !== -1) {
+      const startKey = `${preset.jour}-${preset.heureDebut}`;
+      schedule[startKey] = slot;
+
+      for (let i = 1; i < numBlocks; i++) {
+        const nextIndex = startIndex + i;
+        if (nextIndex < heures.length) {
+          const nextHeure = heures[nextIndex];
+          const nextKey = `${preset.jour}-${nextHeure}`;
+          schedule[nextKey] = { ...slot, isCovered: true };
+        }
+      }
+    }
+  });
+
+  return schedule;
+};
+
 export default function AgendaApp() {
-  const [activitiesData, setActivitiesData] = useState<Activity[]>([]);
   const [description, setDescription] = useState("");
-  const [selectedActivityName, setSelectedActivityName] = useState("");
+  const [selectedActivityName, setSelectedActivityName] = useState(
+    activitiesData[0].name,
+  );
   const [prenom, setPrenom] = useState("");
   const [nom, setNom] = useState("");
   const [duration, setDuration] = useState("60");
   const [generatedSlot, setGeneratedSlot] = useState<Slot | null>(null);
 
-  // Stocke les créneaux de l'EDT
-  const [schedule, setSchedule] = useState<{ [key: string]: Slot }>({});
+  // Initialisation directe de l'EDT avec les créneaux prédéfinis
+  const [schedule, setSchedule] = useState<{ [key: string]: Slot }>(
+    buildInitialSchedule,
+  );
   const [filterActivity, setFilterActivity] = useState("Tous");
-
-  // Chargement des deux fichiers JSON au démarrage
-  useEffect(() => {
-    // 1. Charger les activités
-    fetch("/activities.json")
-      .then((res) => res.json())
-      .then((data: Activity[]) => {
-        setActivitiesData(data);
-        if (data.length > 0) {
-          setSelectedActivityName(data[0].name);
-        }
-      })
-      .catch((err) => console.error("Erreur chargement activities.json:", err));
-
-    // 2. Charger les créneaux prédéfinis (presets)
-    fetch("/presets.json")
-      .then((res) => res.json())
-      .then((presets: PresetSlot[]) => {
-        // On va construire l'objet schedule initial
-        fetch("/activities.json")
-          .then((resAct) => resAct.json())
-          .then((activities: Activity[]) => {
-            const initialSchedule: { [key: string]: Slot } = {};
-
-            presets.forEach((preset) => {
-              const actObj = activities.find((a) => a.name === preset.activity);
-              const color = actObj
-                ? actObj.color
-                : "bg-blue-100 border-blue-400 text-blue-800";
-
-              const slot: Slot = {
-                activity: preset.activity,
-                prenom: preset.prenom,
-                nom: preset.nom,
-                description: preset.description,
-                duration: preset.duration,
-                color,
-              };
-
-              const numBlocks = preset.duration / 30;
-              const startIndex = heures.indexOf(preset.heureDebut);
-
-              if (startIndex !== -1) {
-                const startKey = `${preset.jour}-${preset.heureDebut}`;
-                initialSchedule[startKey] = slot;
-
-                for (let i = 1; i < numBlocks; i++) {
-                  const nextIndex = startIndex + i;
-                  if (nextIndex < heures.length) {
-                    const nextHeure = heures[nextIndex];
-                    const nextKey = `${preset.jour}-${nextHeure}`;
-                    initialSchedule[nextKey] = { ...slot, isCovered: true };
-                  }
-                }
-              }
-            });
-
-            setSchedule(initialSchedule);
-          });
-      })
-      .catch((err) => console.error("Erreur chargement presets.json:", err));
-  }, []);
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
