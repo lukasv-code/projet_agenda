@@ -110,6 +110,29 @@ const initialPresets: PresetSlot[] = [
     maxInscrits: 10,
     inscrits: 4,
   },
+
+  {
+    jour: "Jeudi",
+    heureDebut: "9:00",
+    activity: "Handball",
+    prenom: "Sarah",
+    nom: "Conor",
+    description: "Sortie film SF",
+    duration: 30,
+    maxInscrits: 5,
+    inscrits: 4,
+  },
+  {
+    jour: "Vendredi",
+    heureDebut: "10:00",
+    activity: "Révision",
+    prenom: "Alex",
+    nom: "Martin",
+    description: "Session partiels en même temps",
+    duration: 60,
+    maxInscrits: 4,
+    inscrits: 2,
+  },
 ];
 
 const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
