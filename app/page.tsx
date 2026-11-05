@@ -5,48 +5,52 @@ import Link from "next/link";
 const activitiesData = [
   {
     id: "1",
-    name: "Handball",
-    color: "bg-blue-100 border-blue-300 text-blue-900 hover:bg-blue-200",
+    name: "Running Parc de Champagne",
+    color: "bg-rose-100 border-rose-300 text-rose-900 hover:bg-rose-200",
   },
   {
     id: "2",
-    name: "Cinéma",
-    color:
-      "bg-emerald-100 border-emerald-300 text-emerald-900 hover:bg-emerald-200",
-  },
-  {
-    id: "3",
-    name: "Casino",
-    color:
-      "bg-purple-100 border-purple-300 text-purple-900 hover:bg-purple-200",
-  },
-  {
-    id: "4",
-    name: "jeu de société",
-    color: "bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200",
-  },
-  {
-    id: "5",
-    name: "Révision",
+    name: "Séance BU (Bibliothèque)",
     color:
       "bg-indigo-100 border-indigo-300 text-indigo-900 hover:bg-indigo-200",
   },
   {
-    id: "6",
-    name: "Bar",
+    id: "3",
+    name: "Match Rugby / Hand",
+    color: "bg-blue-100 border-blue-300 text-blue-900 hover:bg-blue-200",
+  },
+  {
+    id: "4",
+    name: "Soirée Place Drouet-d'Erlon",
     color:
       "bg-yellow-100 border-yellow-300 text-yellow-900 hover:bg-yellow-200",
   },
   {
+    id: "5",
+    name: "Basket (Complexes sportifs)",
+    color:
+      "bg-orange-100 border-orange-300 text-orange-900 hover:bg-orange-200",
+  },
+  {
+    id: "6",
+    name: "Ciné Opera / Gaumont",
+    color:
+      "bg-emerald-100 border-emerald-300 text-emerald-900 hover:bg-emerald-200",
+  },
+  {
     id: "7",
-    name: "Course à pied",
-    color: "bg-rose-100 border-rose-300 text-rose-900 hover:bg-rose-200",
+    name: "Jeux de société & Bar",
+    color: "bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200",
   },
   {
     id: "8",
-    name: "Basket",
-    color:
-      "bg-orange-100 border-orange-300 text-orange-900 hover:bg-orange-200",
+    name: "Piscine / Natation",
+    color: "bg-cyan-100 border-cyan-300 text-cyan-900 hover:bg-cyan-200",
+  },
+  {
+    id: "9",
+    name: "FitnessPark",
+    color: "bg-teal-100 border-teal-300 text-teal-900 hover:bg-teal-200",
   },
 ];
 
