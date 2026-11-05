@@ -263,8 +263,8 @@ export default function AgendaApp() {
 
   return (
     <div className="flex h-screen bg-slate-100 font-sans overflow-hidden">
-      {/* COLONNE DE GAUCHE : Générateur */}
-      <div className="w-80 bg-white border-r border-slate-200 shadow-sm flex flex-col justify-between overflow-y-auto p-6">
+      {/* COLONNE DE GAUCHE : Générateur (fixe avec son propre scroll si besoin) */}
+      <div className="w-80 bg-white border-r border-slate-200 shadow-sm flex flex-col overflow-y-auto p-6 h-full">
         <div>
           <div className="flex items-center space-x-2 mb-6">
             <div className="w-3 h-3 bg-indigo-600 rounded-full"></div>
@@ -396,9 +396,9 @@ export default function AgendaApp() {
         </div>
       </div>
 
-      {/* COLONNE DE DROITE : Grille Emploi du temps + Filtre */}
-      <div className="flex-1 p-8 overflow-auto flex flex-col bg-slate-50">
-        <div className="flex justify-between items-center mb-6">
+      {/* COLONNE DE DROITE : Grille Emploi du temps (avec défilement global et propre) */}
+      <div className="flex-1 flex flex-col bg-slate-50 h-full overflow-hidden p-8">
+        <div className="flex justify-between items-center mb-6 flex-shrink-0">
           <div>
             <h2 className="text-xl font-bold text-slate-800">
               Emploi du temps
@@ -427,8 +427,9 @@ export default function AgendaApp() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-1">
-          <div className="grid grid-cols-6 border-b border-slate-200 bg-slate-100/70 text-slate-700 font-semibold text-xs text-center sticky top-0 z-20 backdrop-blur-md">
+        {/* Conteneur scrollable de la grille */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-y-auto flex-1 relative">
+          <div className="grid grid-cols-6 border-b border-slate-200 bg-slate-100 text-slate-700 font-semibold text-xs text-center sticky top-0 z-20">
             <div className="p-3.5 border-r border-slate-200 text-slate-500">
               Heures
             </div>
