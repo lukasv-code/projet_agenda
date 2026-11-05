@@ -103,7 +103,7 @@ const initialPresets: PresetSlot[] = [
     description: "Préparation partiels",
     duration: 90,
     maxInscrits: 2,
-    inscrits: 2, // Celui-ci est déjà complet au lancement
+    inscrits: 1,
   },
 ];
 
