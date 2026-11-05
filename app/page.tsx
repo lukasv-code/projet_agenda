@@ -102,7 +102,15 @@ const initialPresets: PresetSlot[] = [
   },
 ];
 
-const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+const jours = [
+  "Lundi",
+  "Mardi",
+  "Mercredi",
+  "Jeudi",
+  "Vendredi",
+  "Samedi",
+  "Dimanche",
+];
 
 const generateHours = () => {
   const list = [];
