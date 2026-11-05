@@ -56,7 +56,7 @@ interface Slot {
   prenom: string;
   nom: string;
   description: string;
-  duration: number;
+  duration: number; // en minutes
   color: string;
   maxInscrits: number;
   inscrits: number;
@@ -472,18 +472,18 @@ export default function AgendaApp() {
                   return (
                     <div
                       key={jour}
-                      className="border-r border-slate-200 last:border-r-0 relative hover:bg-indigo-50/20 transition-colors"
+                      className="border-r border-slate-200 last:border-r-0 relative hover:bg-indigo-50/20 transition-colors h-16"
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={() => handleDrop(jour, heure)}
                     >
                       {visibleSlots.length > 0 && (
-                        <div className="absolute inset-1 z-10 flex items-center justify-center">
+                        <div className="absolute top-0 left-0 w-full z-10 flex px-1 pt-1">
                           {visibleSlots.length === 1 ? (
                             <div
                               onClick={() =>
                                 setSelectedSlotForModal(visibleSlots[0])
                               }
-                              className={`w-full h-full p-2 border text-xs shadow-sm overflow-hidden flex flex-col justify-between rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01] ${visibleSlots[0].color}`}
+                              className={`w-full p-2 border text-xs shadow-sm overflow-hidden flex flex-col justify-between rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01] ${visibleSlots[0].color}`}
                               style={{
                                 height: `${(visibleSlots[0].duration / 30) * 4 - 0.5}rem`,
                               }}
@@ -507,8 +507,8 @@ export default function AgendaApp() {
                               </div>
                             </div>
                           ) : (
-                            // S'il y a plusieurs activités : affichage côte à côte (split) permanent ou partage de l'espace, sans forcer le survol global
-                            <div className="w-full h-full flex gap-1 items-center justify-center">
+                            // Affichage côte à côte strict ancré sur la ligne exacte de la demi-heure
+                            <div className="w-full flex gap-1 items-start">
                               {visibleSlots.map((slot) => (
                                 <div
                                   key={slot.id}
@@ -516,7 +516,7 @@ export default function AgendaApp() {
                                     e.stopPropagation();
                                     setSelectedSlotForModal(slot);
                                   }}
-                                  className={`flex-1 h-full p-1.5 border text-[10px] shadow-sm overflow-hidden flex flex-col justify-between rounded-lg cursor-pointer transition-all duration-200 hover:scale-[1.02] ${slot.color}`}
+                                  className={`flex-1 p-1.5 border text-[10px] shadow-sm overflow-hidden flex flex-col justify-between rounded-lg cursor-pointer transition-all duration-200 hover:scale-[1.02] ${slot.color}`}
                                   style={{
                                     height: `${(slot.duration / 30) * 4 - 0.5}rem`,
                                   }}
