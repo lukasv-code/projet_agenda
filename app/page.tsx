@@ -102,8 +102,8 @@ const initialPresets: PresetSlot[] = [
     nom: "Martin",
     description: "Préparation partiels",
     duration: 90,
-    maxInscrits: 4,
-    inscrits: 1,
+    maxInscrits: 2,
+    inscrits: 2, // Celui-ci est déjà complet au lancement
   },
 ];
 
@@ -263,7 +263,7 @@ export default function AgendaApp() {
 
   return (
     <div className="flex h-screen bg-slate-100 font-sans overflow-hidden">
-      {/* COLONNE DE GAUCHE : Générateur (fixe avec son propre scroll si besoin) */}
+      {/* COLONNE DE GAUCHE : Générateur */}
       <div className="w-80 bg-white border-r border-slate-200 shadow-sm flex flex-col overflow-y-auto p-6 h-full">
         <div>
           <div className="flex items-center space-x-2 mb-6">
@@ -396,7 +396,7 @@ export default function AgendaApp() {
         </div>
       </div>
 
-      {/* COLONNE DE DROITE : Grille Emploi du temps (avec défilement global et propre) */}
+      {/* COLONNE DE DROITE : Grille Emploi du temps */}
       <div className="flex-1 flex flex-col bg-slate-50 h-full overflow-hidden p-8">
         <div className="flex justify-between items-center mb-6 flex-shrink-0">
           <div>
@@ -427,7 +427,6 @@ export default function AgendaApp() {
           </div>
         </div>
 
-        {/* Conteneur scrollable de la grille */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-y-auto flex-1 relative">
           <div className="grid grid-cols-6 border-b border-slate-200 bg-slate-100 text-slate-700 font-semibold text-xs text-center sticky top-0 z-20">
             <div className="p-3.5 border-r border-slate-200 text-slate-500">
@@ -463,6 +462,9 @@ export default function AgendaApp() {
                     );
                   }
 
+                  // Si l'activité est complète (inscrits >= maxInscrits), on ne l'affiche pas (elle disparaît)
+                  const isComplete =
+                    slotInCell && slotInCell.inscrits >= slotInCell.maxInscrits;
                   const isVisible =
                     !slotInCell ||
                     filterActivity === "Tous" ||
@@ -475,7 +477,7 @@ export default function AgendaApp() {
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={() => handleDrop(jour, heure)}
                     >
-                      {slotInCell && isVisible ? (
+                      {slotInCell && isVisible && !isComplete ? (
                         <div
                           onClick={() => setSelectedSlotForModal(slotInCell)}
                           className={`absolute inset-1 p-2.5 border text-xs shadow-sm overflow-hidden flex flex-col justify-between z-10 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01] ${slotInCell.color}`}
