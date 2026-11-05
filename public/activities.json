@@ -1,10 +1,42 @@
 [
-  { "id": "1", "name": "Handball", "color": "bg-blue-500" },
-  { "id": "2", "name": "Cinéma", "color": "bg-green-500" },
-  { "id": "3", "name": "Casino", "color": "bg-purple-500" },
-  { "id": "4", "name": "jeu de société", "color": "bg-orange-500" },
-  { "id": "5", "name": "Révision", "color": "bg-blue-250" },
-  { "id": "6", "name": "Bar", "color": "bg-green-250" },
-  { "id": "7", "name": "Couse à pied", "color": "bg-purple-250" },
-  { "id": "8", "name": "Basket", "color": "bg-orange-250" }
+  {
+    "id": "1",
+    "name": "Handball",
+    "color": "bg-blue-100 border-blue-400 text-blue-800"
+  },
+  {
+    "id": "2",
+    "name": "Cinéma",
+    "color": "bg-green-100 border-green-400 text-green-800"
+  },
+  {
+    "id": "3",
+    "name": "Casino",
+    "color": "bg-purple-100 border-purple-400 text-purple-800"
+  },
+  {
+    "id": "4",
+    "name": "jeu de société",
+    "color": "bg-orange-100 border-orange-400 text-orange-800"
+  },
+  {
+    "id": "5",
+    "name": "Révision",
+    "color": "bg-indigo-100 border-indigo-400 text-indigo-800"
+  },
+  {
+    "id": "6",
+    "name": "Bar",
+    "color": "bg-yellow-100 border-yellow-400 text-yellow-800"
+  },
+  {
+    "id": "7",
+    "name": "Course à pied",
+    "color": "bg-pink-100 border-pink-400 text-pink-800"
+  },
+  {
+    "id": "8",
+    "name": "Basket",
+    "color": "bg-red-100 border-red-400 text-red-800"
+  }
 ]

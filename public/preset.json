@@ -16,14 +16,5 @@
     "nom": "Conor",
     "description": "Sortie film SF",
     "duration": 180
-  },
-  {
-    "jour": "Jeudi",
-    "heureDebut": "10:30",
-    "activity": "Révision",
-    "prenom": "Alex",
-    "nom": "Martin",
-    "description": "Préparation partiels",
-    "duration": 90
   }
 ]
