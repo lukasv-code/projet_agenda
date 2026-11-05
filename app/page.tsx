@@ -1,7 +1,7 @@
 "tsx";
 "use client";
 import { useState } from "react";
-import activitiesData from "@/data/activities.json";
+import activitiesData from "@/public/activities.json";
 
 export default function AgendaApp() {
   const [description, setDescription] = useState("");
