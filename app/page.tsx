@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 
 const activitiesData = [
   {
@@ -103,7 +104,7 @@ const initialPresets: PresetSlot[] = [
     description: "Préparation partiels",
     duration: 90,
     maxInscrits: 2,
-    inscrits: 1,
+    inscrits: 2,
   },
 ];
 
@@ -262,7 +263,7 @@ export default function AgendaApp() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-100 font-sans overflow-hidden">
+    <div className="flex h-screen bg-slate-100 font-sans overflow-hidden relative">
       {/* COLONNE DE GAUCHE : Générateur */}
       <div className="w-80 bg-white border-r border-slate-200 shadow-sm flex flex-col overflow-y-auto p-6 h-full">
         <div>
@@ -462,7 +463,6 @@ export default function AgendaApp() {
                     );
                   }
 
-                  // Si l'activité est complète (inscrits >= maxInscrits), on ne l'affiche pas (elle disparaît)
                   const isComplete =
                     slotInCell && slotInCell.inscrits >= slotInCell.maxInscrits;
                   const isVisible =
@@ -514,6 +514,15 @@ export default function AgendaApp() {
           </div>
         </div>
       </div>
+
+      {/* BOUTON FLOTTANT : "Je voudrais être partenaire" en bas à droite */}
+      <Link
+        href="/partenaire"
+        className="fixed bottom-6 right-6 z-40 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-3 rounded-full shadow-lg transition-all duration-200 flex items-center space-x-2 hover:scale-105"
+      >
+        <span>🤝</span>
+        <span>Je voudrais être partenaire</span>
+      </Link>
 
       {/* MODALE DE DÉTAILS MODERNE */}
       {selectedSlotForModal && (
