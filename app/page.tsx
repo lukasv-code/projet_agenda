@@ -6,43 +6,47 @@ const activitiesData = [
   {
     id: "1",
     name: "Handball",
-    color: "bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100",
+    color: "bg-blue-100 border-blue-300 text-blue-900 hover:bg-blue-200",
   },
   {
     id: "2",
     name: "Cinéma",
     color:
-      "bg-emerald-50 border-emerald-200 text-emerald-900 hover:bg-emerald-100",
+      "bg-emerald-100 border-emerald-300 text-emerald-900 hover:bg-emerald-200",
   },
   {
     id: "3",
     name: "Casino",
-    color: "bg-purple-50 border-purple-200 text-purple-900 hover:bg-purple-100",
+    color:
+      "bg-purple-100 border-purple-300 text-purple-900 hover:bg-purple-200",
   },
   {
     id: "4",
     name: "jeu de société",
-    color: "bg-amber-50 border-amber-200 text-amber-900 hover:bg-amber-100",
+    color: "bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200",
   },
   {
     id: "5",
     name: "Révision",
-    color: "bg-indigo-50 border-indigo-200 text-indigo-900 hover:bg-indigo-100",
+    color:
+      "bg-indigo-100 border-indigo-300 text-indigo-900 hover:bg-indigo-200",
   },
   {
     id: "6",
     name: "Bar",
-    color: "bg-yellow-50 border-yellow-200 text-yellow-900 hover:bg-yellow-100",
+    color:
+      "bg-yellow-100 border-yellow-300 text-yellow-900 hover:bg-yellow-200",
   },
   {
     id: "7",
     name: "Course à pied",
-    color: "bg-rose-50 border-rose-200 text-rose-900 hover:bg-rose-100",
+    color: "bg-rose-100 border-rose-300 text-rose-900 hover:bg-rose-200",
   },
   {
     id: "8",
     name: "Basket",
-    color: "bg-orange-50 border-orange-200 text-orange-900 hover:bg-orange-100",
+    color:
+      "bg-orange-100 border-orange-300 text-orange-900 hover:bg-orange-200",
   },
 ];
 
@@ -85,6 +89,17 @@ const initialPresets: PresetSlot[] = [
     inscrits: 2,
   },
   {
+    jour: "Lundi",
+    heureDebut: "09:00",
+    activity: "Révision",
+    prenom: "Alex",
+    nom: "Martin",
+    description: "Session partiels en même temps",
+    duration: 60,
+    maxInscrits: 4,
+    inscrits: 1,
+  },
+  {
     jour: "Mardi",
     heureDebut: "14:00",
     activity: "Cinéma",
@@ -94,17 +109,6 @@ const initialPresets: PresetSlot[] = [
     duration: 180,
     maxInscrits: 10,
     inscrits: 4,
-  },
-  {
-    jour: "Jeudi",
-    heureDebut: "10:30",
-    activity: "Révision",
-    prenom: "Alex",
-    nom: "Martin",
-    description: "Préparation partiels",
-    duration: 90,
-    maxInscrits: 2,
-    inscrits: 2,
   },
 ];
 
@@ -124,13 +128,14 @@ const generateHours = () => {
 const heures = generateHours();
 
 const buildInitialSchedule = () => {
-  const schedule: { [key: string]: Slot } = {};
+  // Désormais, chaque cellule contient un tableau de slots (pour gérer les superpositions)
+  const schedule: { [key: string]: Slot[] } = {};
 
   initialPresets.forEach((preset, index) => {
     const actObj = activitiesData.find((a) => a.name === preset.activity);
     const color = actObj
       ? actObj.color
-      : "bg-blue-50 border-blue-200 text-blue-900";
+      : "bg-blue-100 border-blue-300 text-blue-900";
 
     const slotId = `preset-${index}`;
     const slot: Slot = {
@@ -151,14 +156,16 @@ const buildInitialSchedule = () => {
 
     if (startIndex !== -1) {
       const startKey = `${preset.jour}-${preset.heureDebut}`;
-      schedule[startKey] = slot;
+      if (!schedule[startKey]) schedule[startKey] = [];
+      schedule[startKey].push(slot);
 
       for (let i = 1; i < numBlocks; i++) {
         const nextIndex = startIndex + i;
         if (nextIndex < heures.length) {
           const nextHeure = heures[nextIndex];
           const nextKey = `${preset.jour}-${nextHeure}`;
-          schedule[nextKey] = { ...slot, isCovered: true };
+          if (!schedule[nextKey]) schedule[nextKey] = [];
+          schedule[nextKey].push({ ...slot, isCovered: true });
         }
       }
     }
@@ -178,7 +185,7 @@ export default function AgendaApp() {
   const [maxInscrits, setMaxInscrits] = useState("5");
   const [generatedSlot, setGeneratedSlot] = useState<Slot | null>(null);
 
-  const [schedule, setSchedule] = useState<{ [key: string]: Slot }>(
+  const [schedule, setSchedule] = useState<{ [key: string]: Slot[] }>(
     buildInitialSchedule,
   );
   const [filterActivity, setFilterActivity] = useState("Tous");
@@ -215,17 +222,19 @@ export default function AgendaApp() {
 
     const newSchedule = { ...schedule };
     const startKey = `${jour}-${heureDebut}`;
-    newSchedule[startKey] = generatedSlot;
+    if (!newSchedule[startKey]) newSchedule[startKey] = [];
+    newSchedule[startKey].push(generatedSlot);
 
     for (let i = 1; i < numBlocks; i++) {
       const nextIndex = startIndex + i;
       if (nextIndex < heures.length) {
         const nextHeure = heures[nextIndex];
         const nextKey = `${jour}-${nextHeure}`;
-        newSchedule[nextKey] = {
+        if (!newSchedule[nextKey]) newSchedule[nextKey] = [];
+        newSchedule[nextKey].push({
           ...generatedSlot,
           isCovered: true,
-        };
+        });
       }
     }
 
@@ -237,28 +246,26 @@ export default function AgendaApp() {
     const updatedSchedule = { ...schedule };
 
     Object.keys(updatedSchedule).forEach((key) => {
-      const s = updatedSchedule[key];
-      if (s.id === slotId) {
-        if (s.estInscrit) {
-          s.estInscrit = false;
-          s.inscrits = Math.max(0, s.inscrits - 1);
-        } else {
-          if (s.inscrits < s.maxInscrits) {
-            s.estInscrit = true;
-            s.inscrits += 1;
-          } else {
-            alert("Ce créneau est complet !");
-          }
+      updatedSchedule[key] = updatedSchedule[key].map((s) => {
+        if (s.id === slotId) {
+          const newEstInscrit = !s.estInscrit;
+          const newInscrits = newEstInscrit
+            ? Math.min(s.maxInscrits, s.inscrits + 1)
+            : Math.max(0, s.inscrits - 1);
+          return { ...s, estInscrit: newEstInscrit, inscrits: newInscrits };
         }
-      }
+        return s;
+      });
     });
 
     setSchedule(updatedSchedule);
     if (selectedSlotForModal) {
-      const refSlot = Object.values(updatedSchedule).find(
-        (s) => s.id === slotId,
-      );
-      if (refSlot) setSelectedSlotForModal({ ...refSlot });
+      let found = null;
+      Object.values(updatedSchedule).forEach((slotList) => {
+        const match = slotList.find((s) => s.id === slotId);
+        if (match) found = match;
+      });
+      if (found) setSelectedSlotForModal(found);
     }
   };
 
@@ -429,7 +436,7 @@ export default function AgendaApp() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-y-auto flex-1 relative">
-          <div className="grid grid-cols-6 border-b border-slate-200 bg-slate-100 text-slate-700 font-semibold text-xs text-center sticky top-0 z-20">
+          <div className="grid grid-cols-6 border-b border-slate-200 bg-slate-100 text-slate-700 font-semibold text-xs text-center sticky top-0 z-30">
             <div className="p-3.5 border-r border-slate-200 text-slate-500">
               Heures
             </div>
@@ -452,23 +459,16 @@ export default function AgendaApp() {
 
                 {jours.map((jour) => {
                   const cellKey = `${jour}-${heure}`;
-                  const slotInCell = schedule[cellKey];
-
-                  if (slotInCell?.isCovered) {
-                    return (
-                      <div
-                        key={jour}
-                        className="border-r border-slate-200 last:border-r-0 bg-slate-50/30"
-                      ></div>
-                    );
-                  }
-
-                  const isComplete =
-                    slotInCell && slotInCell.inscrits >= slotInCell.maxInscrits;
-                  const isVisible =
-                    !slotInCell ||
-                    filterActivity === "Tous" ||
-                    slotInCell.activity === filterActivity;
+                  const slotsInCell = schedule[cellKey] || [];
+                  const activeSlots = slotsInCell.filter(
+                    (s) => !s.isCovered && s.inscrits < s.maxInscrits,
+                  );
+                  const visibleSlots =
+                    filterActivity === "Tous"
+                      ? activeSlots
+                      : activeSlots.filter(
+                          (s) => s.activity === filterActivity,
+                        );
 
                   return (
                     <div
@@ -477,35 +477,106 @@ export default function AgendaApp() {
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={() => handleDrop(jour, heure)}
                     >
-                      {slotInCell && isVisible && !isComplete ? (
-                        <div
-                          onClick={() => setSelectedSlotForModal(slotInCell)}
-                          className={`absolute inset-1 p-2.5 border text-xs shadow-sm overflow-hidden flex flex-col justify-between z-10 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01] ${slotInCell.color}`}
-                          style={{
-                            height: `${(slotInCell.duration / 30) * 4 - 0.5}rem`,
-                          }}
-                        >
-                          <div className="flex justify-between items-start">
-                            <span className="font-bold truncate text-slate-900">
-                              {slotInCell.activity}
-                            </span>
-                            <span className="text-[10px] font-semibold bg-white/60 px-1.5 py-0.5 rounded-full text-slate-600">
-                              {slotInCell.inscrits}/{slotInCell.maxInscrits}
-                            </span>
-                          </div>
+                      {visibleSlots.length > 0 && (
+                        <div className="absolute inset-1 z-10 flex items-center justify-center">
+                          {visibleSlots.length === 1 ? (
+                            // S'il n'y a qu'une seule activité
+                            <div
+                              onClick={() =>
+                                setSelectedSlotForModal(visibleSlots[0])
+                              }
+                              className={`w-full h-full p-2 border text-xs shadow-sm overflow-hidden flex flex-col justify-between rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01] ${visibleSlots[0].color}`}
+                              style={{
+                                height: `${(visibleSlots[0].duration / 30) * 4 - 0.5}rem`,
+                              }}
+                            >
+                              <div className="flex justify-between items-start">
+                                <span className="font-bold truncate text-slate-900">
+                                  {visibleSlots[0].activity}
+                                </span>
+                                <span className="text-[10px] font-semibold bg-white/60 px-1.5 py-0.5 rounded-full text-slate-600">
+                                  {visibleSlots[0].inscrits}/
+                                  {visibleSlots[0].maxInscrits}
+                                </span>
+                              </div>
+                              <div className="flex justify-center items-center pb-0.5">
+                                {visibleSlots[0].estInscrit && (
+                                  <span
+                                    className="w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white shadow-sm"
+                                    title="Inscrit"
+                                  ></span>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            // S'il y a PLUSIEURS activités superposées : Effet de déploiement gauche/droite au survol
+                            <div className="relative w-full h-full group flex items-center justify-center">
+                              {/* Carte principale affichée par défaut */}
+                              <div
+                                className={`w-full h-full p-2 border text-xs shadow-md overflow-hidden flex flex-col justify-between rounded-xl cursor-pointer bg-white border-indigo-300 text-indigo-950 font-bold flex items-center justify-center text-center transition-all group-hover:opacity-0`}
+                                style={{
+                                  height: `${(visibleSlots[0].duration / 30) * 4 - 0.5}rem`,
+                                }}
+                              >
+                                <span className="text-[11px] bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full shadow-sm">
+                                  ⚡ {visibleSlots.length} activités superposées
+                                </span>
+                                <span className="text-[10px] text-slate-500 font-normal">
+                                  Survolez pour choisir
+                                </span>
+                              </div>
 
-                          <div className="flex justify-center items-center pb-0.5">
-                            {slotInCell.estInscrit && (
-                              <span
-                                className="w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white shadow-sm"
-                                title="Inscrit"
-                              ></span>
-                            )}
-                          </div>
+                              {/* Cartes déployées à gauche et à droite au survol */}
+                              <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 flex items-center justify-center z-40">
+                                {visibleSlots.map((slot, idx) => {
+                                  // Calcul du décalage horizontal selon l'index pour étaler à gauche et à droite
+                                  const total = visibleSlots.length;
+                                  const offsetMultiplier =
+                                    idx - (total - 1) / 2;
+                                  const translateX = offsetMultiplier * 110; // décale chaque carte de 110% en largeur
+
+                                  return (
+                                    <div
+                                      key={slot.id}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedSlotForModal(slot);
+                                      }}
+                                      className={`absolute p-2.5 border text-xs shadow-xl rounded-xl cursor-pointer flex flex-col justify-between transition-all duration-300 hover:scale-105 ${slot.color}`}
+                                      style={{
+                                        width: "105%",
+                                        height: `${(slot.duration / 30) * 4 - 0.5}rem`,
+                                        transform: `translateX(${translateX}%)`,
+                                        zIndex: 50 + idx,
+                                      }}
+                                    >
+                                      <div className="flex justify-between items-start">
+                                        <span className="font-bold truncate text-slate-900">
+                                          {slot.activity}
+                                        </span>
+                                        <span className="text-[10px] font-semibold bg-white/80 px-1.5 py-0.5 rounded-full text-slate-600">
+                                          {slot.inscrits}/{slot.maxInscrits}
+                                        </span>
+                                      </div>
+                                      <div className="text-[10px] truncate font-medium opacity-80">
+                                        {slot.prenom} {slot.nom}
+                                      </div>
+                                      <div className="flex justify-center items-center pb-0.5">
+                                        {slot.estInscrit && (
+                                          <span
+                                            className="w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white shadow-sm"
+                                            title="Inscrit"
+                                          ></span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      ) : slotInCell && !isVisible ? (
-                        <div className="absolute inset-1 bg-slate-100 opacity-20 pointer-events-none rounded-xl"></div>
-                      ) : null}
+                      )}
                     </div>
                   );
                 })}
@@ -515,7 +586,7 @@ export default function AgendaApp() {
         </div>
       </div>
 
-      {/* BOUTON FLOTTANT : "Je voudrais être partenaire" en bas à droite */}
+      {/* BOUTON FLOTTANT : Partenaire */}
       <Link
         href="/partenaire"
         className="fixed bottom-6 right-6 z-40 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-3 rounded-full shadow-lg transition-all duration-200 flex items-center space-x-2 hover:scale-105"
@@ -524,7 +595,7 @@ export default function AgendaApp() {
         <span>Je voudrais être partenaire</span>
       </Link>
 
-      {/* MODALE DE DÉTAILS MODERNE */}
+      {/* MODALE DE DÉTAILS */}
       {selectedSlotForModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md text-slate-800 border border-slate-100 animate-in fade-in zoom-in duration-150">
