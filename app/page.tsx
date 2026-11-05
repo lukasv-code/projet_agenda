@@ -1,29 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-// Liste des activités possibles
-const activitiesData = [
-  {
-    id: "1",
-    name: "Cours magistral",
-    color: "bg-blue-100 border-blue-400 text-blue-800",
-  },
-  {
-    id: "2",
-    name: "Travaux dirigés (TD)",
-    color: "bg-green-100 border-green-400 text-green-800",
-  },
-  {
-    id: "3",
-    name: "Réunion / Projet",
-    color: "bg-purple-100 border-purple-400 text-purple-800",
-  },
-  {
-    id: "4",
-    name: "Pause / Repas",
-    color: "bg-orange-100 border-orange-400 text-orange-800",
-  },
-];
+interface Activity {
+  id: string;
+  name: string;
+  color: string;
+}
 
 interface Slot {
   activity: string;
@@ -50,10 +32,9 @@ const generateHours = () => {
 const heures = generateHours();
 
 export default function AgendaApp() {
+  const [activitiesData, setActivitiesData] = useState<Activity[]>([]);
   const [description, setDescription] = useState("");
-  const [selectedActivity, setSelectedActivity] = useState(
-    activitiesData[0].name,
-  );
+  const [selectedActivity, setSelectedActivity] = useState("");
   const [duration, setDuration] = useState("60");
   const [generatedSlot, setGeneratedSlot] = useState<Slot | null>(null);
 
@@ -62,6 +43,21 @@ export default function AgendaApp() {
 
   // État pour le filtre actif ("Tous" par défaut)
   const [filterActivity, setFilterActivity] = useState("Tous");
+
+  // Chargement du fichier activities.json depuis le dossier public au démarrage
+  useEffect(() => {
+    fetch("/activities.json")
+      .then((res) => res.json())
+      .then((data) => {
+        setActivitiesData(data);
+        if (data.length > 0) {
+          setSelectedActivity(data[0].name);
+        }
+      })
+      .catch((err) =>
+        console.error("Erreur lors du chargement des activités:", err),
+      );
+  }, []);
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -249,7 +245,6 @@ export default function AgendaApp() {
                   );
                 }
 
-                // Vérifie si le créneau correspond au filtre actif
                 const isVisible =
                   !slotInCell ||
                   filterActivity === "Tous" ||
@@ -280,7 +275,6 @@ export default function AgendaApp() {
                         </span>
                       </div>
                     ) : slotInCell && !isVisible ? (
-                      // Optionnel : un style grisé ou masqué si le filtre ne correspond pas
                       <div className="absolute top-0 left-0 w-full h-full bg-gray-100 opacity-30 pointer-events-none"></div>
                     ) : null}
                   </div>
