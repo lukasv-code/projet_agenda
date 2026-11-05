@@ -30,7 +30,7 @@ interface Slot {
   description: string;
   duration: number; // en minutes (30, 60, 90, 120...)
   color: string;
-  isCovered?: boolean; // Pour masquer les cellules en dessous si le créneau dure plus de 30 min
+  isCovered?: boolean;
 }
 
 const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
@@ -87,7 +87,7 @@ export default function AgendaApp() {
     const startKey = `${jour}-${heureDebut}`;
     newSchedule[startKey] = generatedSlot;
 
-    // Marque les blocs suivants comme "couverts" pour la durée du créneau
+    // Marque les blocs suivants comme "couverts"
     for (let i = 1; i < numBlocks; i++) {
       const nextIndex = startIndex + i;
       if (nextIndex < heures.length) {
@@ -95,7 +95,7 @@ export default function AgendaApp() {
         const nextKey = `${jour}-${nextHeure}`;
         newSchedule[nextKey] = {
           ...generatedSlot,
-          isCovered: true, // Indique que c'est une cellule occupée par le prolongement du dessus
+          isCovered: true,
         };
       }
     }
@@ -184,7 +184,7 @@ export default function AgendaApp() {
         </div>
       </div>
 
-      {/* COLONNE DE DROITE : Grille Emploi du temps (Jours x Heures jusqu'à 00:00) */}
+      {/* COLONNE DE DROITE : Grille Emploi du temps */}
       <div className="w-3/4 p-6 overflow-auto">
         <h2 className="text-xl font-bold mb-4 text-black">
           Emploi du temps de la semaine (8h - 00h)
@@ -204,8 +204,8 @@ export default function AgendaApp() {
               key={heure}
               className="grid grid-cols-6 border-b last:border-b-0 h-16"
             >
-              {/* Colonne des heures */}
-              <div className="p-2 border-r text-gray-500 font-medium text-center flex items-center justify-center bg-gray-50 text-xs">
+              {/* Colonne des heures fixe et indépendante */}
+              <div className="p-2 border-r text-gray-500 font-medium text-center flex items-center justify-center bg-gray-50 text-xs h-16">
                 {heure}
               </div>
 
@@ -214,12 +214,11 @@ export default function AgendaApp() {
                 const cellKey = `${jour}-${heure}`;
                 const slotInCell = schedule[cellKey];
 
-                // Si la cellule est masquée car couverte par un créneau plus long du dessus, on ne l'affiche pas
                 if (slotInCell?.isCovered) {
                   return (
                     <div
                       key={jour}
-                      className="border-r last:border-r-0 bg-gray-50/50"
+                      className="border-r last:border-r-0 bg-gray-50/50 h-16"
                     ></div>
                   );
                 }
@@ -227,16 +226,16 @@ export default function AgendaApp() {
                 return (
                   <div
                     key={jour}
-                    className="border-r last:border-r-0 p-1 relative flex items-center justify-center hover:bg-gray-50 transition"
+                    className="border-r last:border-r-0 p-1 relative flex items-center justify-center hover:bg-gray-50 transition h-16"
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleDrop(jour, heure)}
                   >
                     {slotInCell ? (
                       <div
-                        className={`w-full p-2 rounded border text-xs shadow-sm overflow-hidden flex flex-col justify-between ${slotInCell.color}`}
+                        className={`absolute top-1 left-1 right-1 p-2 rounded border text-xs shadow-sm overflow-hidden flex flex-col justify-between z-20 ${slotInCell.color}`}
                         style={{
-                          height: `${(slotInCell.duration / 30) * 4}rem`,
-                        }} // Ajuste la hauteur visuelle selon le nombre de blocs de 30 min
+                          height: `${(slotInCell.duration / 30) * 4 - 0.5}rem`,
+                        }}
                       >
                         <span className="font-bold truncate">
                           {slotInCell.activity}
@@ -248,11 +247,7 @@ export default function AgendaApp() {
                           {slotInCell.duration} min
                         </span>
                       </div>
-                    ) : (
-                      <span className="text-gray-300 text-xs select-none">
-                        Déposer ici
-                      </span>
-                    )}
+                    ) : null}
                   </div>
                 );
               })}
