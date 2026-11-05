@@ -1,0 +1,29 @@
+[
+  {
+    "jour": "Lundi",
+    "heureDebut": "09:00",
+    "activity": "Handball",
+    "prenom": "Thomas",
+    "nom": "Dupont",
+    "description": "Entraînement match",
+    "duration": 120
+  },
+  {
+    "jour": "Mardi",
+    "heureDebut": "14:00",
+    "activity": "Cinéma",
+    "prenom": "Sarah",
+    "nom": "Conor",
+    "description": "Sortie film SF",
+    "duration": 180
+  },
+  {
+    "jour": "Jeudi",
+    "heureDebut": "10:30",
+    "activity": "Révision",
+    "prenom": "Alex",
+    "nom": "Martin",
+    "description": "Préparation partiels",
+    "duration": 90
+  }
+]

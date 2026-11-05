@@ -9,15 +9,26 @@ interface Activity {
 
 interface Slot {
   activity: string;
+  prenom: string;
+  nom: string;
   description: string;
   duration: number; // en minutes
   color: string;
   isCovered?: boolean;
 }
 
+interface PresetSlot {
+  jour: string;
+  heureDebut: string;
+  activity: string;
+  prenom: string;
+  nom: string;
+  description: string;
+  duration: number;
+}
+
 const jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
 
-// Génération automatique des heures de 08:00 à 00:00 par tranches de 30 minutes
 const generateHours = () => {
   const list = [];
   for (let h = 8; h <= 23; h++) {
@@ -34,41 +45,90 @@ const heures = generateHours();
 export default function AgendaApp() {
   const [activitiesData, setActivitiesData] = useState<Activity[]>([]);
   const [description, setDescription] = useState("");
-  const [selectedActivity, setSelectedActivity] = useState("");
+  const [selectedActivityName, setSelectedActivityName] = useState("");
+  const [prenom, setPrenom] = useState("");
+  const [nom, setNom] = useState("");
   const [duration, setDuration] = useState("60");
   const [generatedSlot, setGeneratedSlot] = useState<Slot | null>(null);
 
-  // Stocke les créneaux placés : clé = "Jour-Heure"
+  // Stocke les créneaux de l'EDT
   const [schedule, setSchedule] = useState<{ [key: string]: Slot }>({});
-
-  // État pour le filtre actif ("Tous" par défaut)
   const [filterActivity, setFilterActivity] = useState("Tous");
 
-  // Chargement du fichier activities.json depuis le dossier public au démarrage
+  // Chargement des deux fichiers JSON au démarrage
   useEffect(() => {
+    // 1. Charger les activités
     fetch("/activities.json")
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: Activity[]) => {
         setActivitiesData(data);
         if (data.length > 0) {
-          setSelectedActivity(data[0].name);
+          setSelectedActivityName(data[0].name);
         }
       })
-      .catch((err) =>
-        console.error("Erreur lors du chargement des activités:", err),
-      );
+      .catch((err) => console.error("Erreur chargement activities.json:", err));
+
+    // 2. Charger les créneaux prédéfinis (presets)
+    fetch("/presets.json")
+      .then((res) => res.json())
+      .then((presets: PresetSlot[]) => {
+        // On va construire l'objet schedule initial
+        fetch("/activities.json")
+          .then((resAct) => resAct.json())
+          .then((activities: Activity[]) => {
+            const initialSchedule: { [key: string]: Slot } = {};
+
+            presets.forEach((preset) => {
+              const actObj = activities.find((a) => a.name === preset.activity);
+              const color = actObj
+                ? actObj.color
+                : "bg-blue-100 border-blue-400 text-blue-800";
+
+              const slot: Slot = {
+                activity: preset.activity,
+                prenom: preset.prenom,
+                nom: preset.nom,
+                description: preset.description,
+                duration: preset.duration,
+                color,
+              };
+
+              const numBlocks = preset.duration / 30;
+              const startIndex = heures.indexOf(preset.heureDebut);
+
+              if (startIndex !== -1) {
+                const startKey = `${preset.jour}-${preset.heureDebut}`;
+                initialSchedule[startKey] = slot;
+
+                for (let i = 1; i < numBlocks; i++) {
+                  const nextIndex = startIndex + i;
+                  if (nextIndex < heures.length) {
+                    const nextHeure = heures[nextIndex];
+                    const nextKey = `${preset.jour}-${nextHeure}`;
+                    initialSchedule[nextKey] = { ...slot, isCovered: true };
+                  }
+                }
+              }
+            });
+
+            setSchedule(initialSchedule);
+          });
+      })
+      .catch((err) => console.error("Erreur chargement presets.json:", err));
   }, []);
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
-    const actObj = activitiesData.find((a) => a.name === selectedActivity);
+    const actObj = activitiesData.find((a) => a.name === selectedActivityName);
+    if (!actObj) return;
+
     setGeneratedSlot({
-      activity: selectedActivity,
+      activity: actObj.name,
+      prenom,
+      nom,
       description,
       duration: parseInt(duration),
-      color: actObj
-        ? actObj.color
-        : "bg-blue-100 border-blue-400 text-blue-800",
+      color: actObj.color,
     });
   };
 
@@ -81,7 +141,6 @@ export default function AgendaApp() {
     if (startIndex === -1) return;
 
     const newSchedule = { ...schedule };
-
     const startKey = `${jour}-${heureDebut}`;
     newSchedule[startKey] = generatedSlot;
 
@@ -116,8 +175,8 @@ export default function AgendaApp() {
               </label>
               <select
                 className="w-full mt-1 p-2 border rounded text-black bg-white"
-                value={selectedActivity}
-                onChange={(e) => setSelectedActivity(e.target.value)}
+                value={selectedActivityName}
+                onChange={(e) => setSelectedActivityName(e.target.value)}
               >
                 {activitiesData.map((act) => (
                   <option key={act.id} value={act.name}>
@@ -129,6 +188,34 @@ export default function AgendaApp() {
 
             <div>
               <label className="block text-sm font-medium text-black">
+                Prénom
+              </label>
+              <input
+                type="text"
+                className="w-full mt-1 p-2 border rounded text-black bg-white"
+                value={prenom}
+                onChange={(e) => setPrenom(e.target.value)}
+                placeholder="Ex: Thomas"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-black">
+                Nom
+              </label>
+              <input
+                type="text"
+                className="w-full mt-1 p-2 border rounded text-black bg-white"
+                value={nom}
+                onChange={(e) => setNom(e.target.value)}
+                placeholder="Ex: Dupont"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-black">
                 Description
               </label>
               <input
@@ -136,7 +223,7 @@ export default function AgendaApp() {
                 className="w-full mt-1 p-2 border rounded text-black bg-white"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Ex: Chapitre 1 - Intro"
+                placeholder="Ex: Entraînement..."
               />
             </div>
 
@@ -175,8 +262,11 @@ export default function AgendaApp() {
               className={`mt-6 p-4 border rounded cursor-grab shadow ${generatedSlot.color}`}
             >
               <h3 className="font-bold">{generatedSlot.activity}</h3>
-              <p className="text-sm">{generatedSlot.description}</p>
-              <span className="text-xs opacity-75">
+              <p className="text-xs font-medium">
+                {generatedSlot.prenom} {generatedSlot.nom}
+              </p>
+              <p className="text-sm mt-1">{generatedSlot.description}</p>
+              <span className="text-xs opacity-75 mt-2 block">
                 Durée : {generatedSlot.duration} min (Glissez-moi)
               </span>
             </div>
@@ -191,7 +281,6 @@ export default function AgendaApp() {
             Emploi du temps de la semaine (8h - 00h)
           </h2>
 
-          {/* SÉLECTEUR DE FILTRE */}
           <div className="flex items-center space-x-2">
             <label className="text-sm font-medium text-black">
               Filtrer par :
@@ -226,12 +315,10 @@ export default function AgendaApp() {
               key={heure}
               className="grid grid-cols-6 border-b last:border-b-0 h-16"
             >
-              {/* Colonne des heures fixe */}
               <div className="p-2 border-r text-gray-500 font-medium text-center flex items-center justify-center bg-gray-50 text-xs h-16">
                 {heure}
               </div>
 
-              {/* Cases des jours de la semaine */}
               {jours.map((jour) => {
                 const cellKey = `${jour}-${heure}`;
                 const slotInCell = schedule[cellKey];
@@ -264,12 +351,17 @@ export default function AgendaApp() {
                           height: `${(slotInCell.duration / 30) * 4}rem`,
                         }}
                       >
-                        <span className="font-bold truncate">
-                          {slotInCell.activity}
-                        </span>
-                        <span className="truncate">
-                          {slotInCell.description}
-                        </span>
+                        <div>
+                          <span className="font-bold truncate block">
+                            {slotInCell.activity}
+                          </span>
+                          <span className="text-[11px] font-medium opacity-90 truncate block">
+                            {slotInCell.prenom} {slotInCell.nom}
+                          </span>
+                          <span className="truncate block mt-0.5">
+                            {slotInCell.description}
+                          </span>
+                        </div>
                         <span className="text-[10px] opacity-75">
                           {slotInCell.duration} min
                         </span>

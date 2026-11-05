@@ -1,6 +1,10 @@
 [
-  { "id": "1", "name": "Cours magistral", "color": "bg-blue-500" },
-  { "id": "2", "name": "Travaux dirigés (TD)", "color": "bg-green-500" },
-  { "id": "3", "name": "Réunion / Projet", "color": "bg-purple-500" },
-  { "id": "4", "name": "Pause / Repas", "color": "bg-orange-500" }
+  { "id": "1", "name": "Handball", "color": "bg-blue-500" },
+  { "id": "2", "name": "Cinéma", "color": "bg-green-500" },
+  { "id": "3", "name": "Casino", "color": "bg-purple-500" },
+  { "id": "4", "name": "jeu de société", "color": "bg-orange-500" },
+  { "id": "5", "name": "Révision", "color": "bg-blue-250" },
+  { "id": "6", "name": "Bar", "color": "bg-green-250" },
+  { "id": "7", "name": "Couse à pied", "color": "bg-purple-250" },
+  { "id": "8", "name": "Basket", "color": "bg-orange-250" }
 ]
