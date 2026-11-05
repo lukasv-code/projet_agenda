@@ -6,7 +6,10 @@
     "prenom": "Thomas",
     "nom": "Dupont",
     "description": "Entraînement match",
-    "duration": 120
+    "duration": 120,
+    "maxInscrits": 5,
+    "inscrits": 2,
+    "estInscrit": false
   },
   {
     "jour": "Mardi",
@@ -15,6 +18,21 @@
     "prenom": "Sarah",
     "nom": "Conor",
     "description": "Sortie film SF",
-    "duration": 180
+    "duration": 180,
+    "maxInscrits": 10,
+    "inscrits": 4,
+    "estInscrit": false
+  },
+  {
+    "jour": "Jeudi",
+    "heureDebut": "10:30",
+    "activity": "Révision",
+    "prenom": "Alex",
+    "nom": "Martin",
+    "description": "Préparation partiels",
+    "duration": 90,
+    "maxInscrits": 3,
+    "inscrits": 3,
+    "estInscrit": false
   }
 ]

@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 
-// 1. Liste de base des activités (votre 1er JSON)
 const activitiesData = [
   {
     id: "1",
@@ -42,12 +41,16 @@ const activitiesData = [
 ];
 
 interface Slot {
+  id: string; // Identifiant unique pour retrouver le créneau dans le state
   activity: string;
   prenom: string;
   nom: string;
   description: string;
-  duration: number; // en minutes
+  duration: number;
   color: string;
+  maxInscrits: number;
+  inscrits: number;
+  estInscrit: boolean;
   isCovered?: boolean;
 }
 
@@ -59,9 +62,10 @@ interface PresetSlot {
   nom: string;
   description: string;
   duration: number;
+  maxInscrits: number;
+  inscrits: number;
 }
 
-// 2. Créneaux prédéfinis au lancement (votre 2ème JSON)
 const initialPresets: PresetSlot[] = [
   {
     jour: "Lundi",
@@ -71,6 +75,8 @@ const initialPresets: PresetSlot[] = [
     nom: "Dupont",
     description: "Entraînement match",
     duration: 120,
+    maxInscrits: 5,
+    inscrits: 2,
   },
   {
     jour: "Mardi",
@@ -80,6 +86,8 @@ const initialPresets: PresetSlot[] = [
     nom: "Conor",
     description: "Sortie film SF",
     duration: 180,
+    maxInscrits: 10,
+    inscrits: 4,
   },
   {
     jour: "Jeudi",
@@ -89,6 +97,8 @@ const initialPresets: PresetSlot[] = [
     nom: "Martin",
     description: "Préparation partiels",
     duration: 90,
+    maxInscrits: 4,
+    inscrits: 1,
   },
 ];
 
@@ -107,23 +117,27 @@ const generateHours = () => {
 
 const heures = generateHours();
 
-// Fonction pour initialiser l'emploi du temps avec les presets
 const buildInitialSchedule = () => {
   const schedule: { [key: string]: Slot } = {};
 
-  initialPresets.forEach((preset) => {
+  initialPresets.forEach((preset, index) => {
     const actObj = activitiesData.find((a) => a.name === preset.activity);
     const color = actObj
       ? actObj.color
       : "bg-blue-100 border-blue-400 text-blue-800";
 
+    const slotId = `preset-${index}`;
     const slot: Slot = {
+      id: slotId,
       activity: preset.activity,
       prenom: preset.prenom,
       nom: preset.nom,
       description: preset.description,
       duration: preset.duration,
       color,
+      maxInscrits: preset.maxInscrits,
+      inscrits: preset.inscrits,
+      estInscrit: false,
     };
 
     const numBlocks = preset.duration / 30;
@@ -155,13 +169,18 @@ export default function AgendaApp() {
   const [prenom, setPrenom] = useState("");
   const [nom, setNom] = useState("");
   const [duration, setDuration] = useState("60");
+  const [maxInscrits, setMaxInscrits] = useState("5");
   const [generatedSlot, setGeneratedSlot] = useState<Slot | null>(null);
 
-  // Initialisation directe de l'EDT avec les créneaux prédéfinis
   const [schedule, setSchedule] = useState<{ [key: string]: Slot }>(
     buildInitialSchedule,
   );
   const [filterActivity, setFilterActivity] = useState("Tous");
+
+  // État pour la modale de détails
+  const [selectedSlotForModal, setSelectedSlotForModal] = useState<Slot | null>(
+    null,
+  );
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,12 +188,16 @@ export default function AgendaApp() {
     if (!actObj) return;
 
     setGeneratedSlot({
+      id: `custom-${Date.now()}`,
       activity: actObj.name,
       prenom,
       nom,
       description,
       duration: parseInt(duration),
       color: actObj.color,
+      maxInscrits: parseInt(maxInscrits),
+      inscrits: 0,
+      estInscrit: false,
     });
   };
 
@@ -206,8 +229,40 @@ export default function AgendaApp() {
     setGeneratedSlot(null);
   };
 
+  // Basculer l'inscription à un créneau
+  const toggleInscription = (slotId: string) => {
+    const updatedSchedule = { ...schedule };
+
+    // On parcourt toutes les cases pour mettre à jour toutes les parties du créneau (s'il s'étale sur plusieurs blocs)
+    Object.keys(updatedSchedule).forEach((key) => {
+      const s = updatedSchedule[key];
+      if (s.id === slotId) {
+        if (s.estInscrit) {
+          s.estInscrit = false;
+          s.inscrits = Math.max(0, s.inscrits - 1);
+        } else {
+          if (s.inscrits < s.maxInscrits) {
+            s.estInscrit = true;
+            s.inscrits += 1;
+          } else {
+            alert("Ce créneau est complet !");
+          }
+        }
+      }
+    });
+
+    setSchedule(updatedSchedule);
+    if (selectedSlotForModal) {
+      // Met à jour la modale ouverte
+      const refSlot = Object.values(updatedSchedule).find(
+        (s) => s.id === slotId,
+      );
+      if (refSlot) setSelectedSlotForModal({ ...refSlot });
+    }
+  };
+
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
+    <div className="flex h-screen bg-gray-100 overflow-hidden relative">
       {/* COLONNE DE GAUCHE : Générateur */}
       <div className="w-1/4 p-6 bg-white border-r shadow-md flex flex-col justify-between overflow-y-auto">
         <div>
@@ -275,6 +330,20 @@ export default function AgendaApp() {
 
             <div>
               <label className="block text-sm font-medium text-black">
+                Nombre max d'inscrits
+              </label>
+              <input
+                type="number"
+                className="w-full mt-1 p-2 border rounded text-black bg-white"
+                value={maxInscrits}
+                onChange={(e) => setMaxInscrits(e.target.value)}
+                min="1"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-black">
                 Durée
               </label>
               <select
@@ -301,7 +370,6 @@ export default function AgendaApp() {
             </button>
           </form>
 
-          {/* Créneau prêt à être glissé */}
           {generatedSlot && (
             <div
               draggable
@@ -311,9 +379,11 @@ export default function AgendaApp() {
               <p className="text-xs font-medium">
                 {generatedSlot.prenom} {generatedSlot.nom}
               </p>
-              <p className="text-sm mt-1">{generatedSlot.description}</p>
+              <p className="text-xs mt-1">
+                Places : 0/{generatedSlot.maxInscrits}
+              </p>
               <span className="text-xs opacity-75 mt-2 block">
-                Durée : {generatedSlot.duration} min (Glissez-moi)
+                (Glissez-moi)
               </span>
             </div>
           )}
@@ -392,7 +462,8 @@ export default function AgendaApp() {
                   >
                     {slotInCell && isVisible ? (
                       <div
-                        className={`absolute top-0 left-0 w-full p-2 border text-xs shadow-md overflow-hidden flex flex-col justify-between z-10 rounded ${slotInCell.color}`}
+                        onClick={() => setSelectedSlotForModal(slotInCell)}
+                        className={`absolute top-0 left-0 w-full p-2 border text-xs shadow-md overflow-hidden flex flex-col justify-between z-10 rounded cursor-pointer hover:opacity-90 transition ${slotInCell.color}`}
                         style={{
                           height: `${(slotInCell.duration / 30) * 4}rem`,
                         }}
@@ -401,16 +472,21 @@ export default function AgendaApp() {
                           <span className="font-bold truncate block">
                             {slotInCell.activity}
                           </span>
-                          <span className="text-[11px] font-medium opacity-90 truncate block">
-                            {slotInCell.prenom} {slotInCell.nom}
-                          </span>
-                          <span className="truncate block mt-0.5">
-                            {slotInCell.description}
+                          <span className="text-[10px] opacity-80">
+                            {slotInCell.inscrits}/{slotInCell.maxInscrits}{" "}
+                            inscrits
                           </span>
                         </div>
-                        <span className="text-[10px] opacity-75">
-                          {slotInCell.duration} min
-                        </span>
+
+                        {/* Point rouge si inscrit */}
+                        <div className="flex justify-center items-center pb-1">
+                          {slotInCell.estInscrit && (
+                            <span
+                              className="w-2.5 h-2.5 bg-red-600 rounded-full shadow-sm"
+                              title="Vous êtes inscrit"
+                            ></span>
+                          )}
+                        </div>
                       </div>
                     ) : slotInCell && !isVisible ? (
                       <div className="absolute top-0 left-0 w-full h-full bg-gray-100 opacity-30 pointer-events-none"></div>
@@ -422,6 +498,57 @@ export default function AgendaApp() {
           ))}
         </div>
       </div>
+
+      {/* MODALE DE DÉTAILS DE L'ACTIVITÉ */}
+      {selectedSlotForModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-96 text-black">
+            <h3 className="text-xl font-bold mb-2">
+              {selectedSlotForModal.activity}
+            </h3>
+            <p className="text-sm text-gray-600 mb-4 font-medium">
+              Responsable : {selectedSlotForModal.prenom}{" "}
+              {selectedSlotForModal.nom}
+            </p>
+
+            <div className="space-y-2 mb-6 bg-gray-50 p-3 rounded border">
+              <p className="text-sm">
+                <strong>Description :</strong>{" "}
+                {selectedSlotForModal.description || "Aucune description"}
+              </p>
+              <p className="text-sm">
+                <strong>Durée :</strong> {selectedSlotForModal.duration} minutes
+              </p>
+              <p className="text-sm">
+                <strong>Inscriptions :</strong> {selectedSlotForModal.inscrits}{" "}
+                / {selectedSlotForModal.maxInscrits} personnes
+              </p>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <button
+                onClick={() => toggleInscription(selectedSlotForModal.id)}
+                className={`px-4 py-2 rounded text-white font-semibold text-sm ${
+                  selectedSlotForModal.estInscrit
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                {selectedSlotForModal.estInscrit
+                  ? "Se désinscrire"
+                  : "S'inscrire"}
+              </button>
+
+              <button
+                onClick={() => setSelectedSlotForModal(null)}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded text-sm font-semibold"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
